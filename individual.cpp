@@ -10,9 +10,12 @@ Individual::Individual(double s, double d)
     this->d = d;
 }
 
-void Individual::mutation(double mu, double sigmaZ)
+void Individual::mutation(double mu, double sigmaZ, distrMut typeMut)
 {
-    double deltaMu = 0;
+    /* Pour «retenir» quel trait doit muter
+       false: d     true: s */
+    bool sWasChosen = false;
+    double t = d;
 
     /* Seed basée sur l'horloge pour le générateur de nombres aléatoires */
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -26,21 +29,60 @@ void Individual::mutation(double mu, double sigmaZ)
     /* Y a-t-il mutation ? */
     if(unif(generator) < mu)
     {
-        /* Si oui, on choisit aléatoirement le degré de mutation
-        Pour cela, on crée une distribution normale en fonction de sigma Z */
-        std::normal_distribution<double> gauss(0,sigmaZ);
-        deltaMu = gauss(generator);
-
         /* On choisit quel trait mute */
-        if(unif(generator) > 0.5)
+        if(unif(generator) >= 0.5)
         {
-            s = s*exp(deltaMu)/((exp(deltaMu) - 1)*s + 1);
+            t = s;
+            sWasChosen = true;
         }
-        else
+
+        switch(typeMut)
         {
-            d = d*exp(deltaMu)/((exp(deltaMu) - 1)*d + 1);
+            case gaussian:
+                t = gaussMutation(sigmaZ, t);
+                break;
+
+            case uniform:
+                t = unifMutation(sigmaZ, t);
+                break;
         }
+
+        if (sWasChosen) {s = t;}
+        else {d = t;}
     }
+}
+
+double Individual::gaussMutation (double sigmaZ, double t)
+{
+    /* Seed basée sur l'horloge pour le générateur de nombres aléatoires */
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    /* Générateur de nombres pseudo-aléatoires */
+    std::default_random_engine generator (seed);
+
+    std::normal_distribution<double> gauss(0,sigmaZ);
+    double deltaMu = gauss(generator);
+
+    return t*exp(deltaMu)/((exp(deltaMu) - 1)*t + 1);
+}
+
+double Individual::unifMutation (double sigmaZ, double t)
+{
+    /* Seed basée sur l'horloge pour le générateur de nombres aléatoires */
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    /* Générateur de nombres pseudo-aléatoires */
+    std::default_random_engine generator (seed);
+
+    double lowerBound = t - sigmaZ;
+    double upperBound = t + sigmaZ;
+
+    if(lowerBound < 0) {lowerBound = 0;}
+    if(upperBound > 1) {lowerBound = 1;}
+
+    std::uniform_real_distribution<double> unif(lowerBound, upperBound);
+
+    return unif(generator);
 }
 
 void Individual::calcPress(double delta, double c, bool pollenized, bool disp, std::vector<double>& press)

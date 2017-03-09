@@ -12,6 +12,12 @@
  * @file
  */
 
+ /**
+  * @brief
+  * Structure qui permet de choisir
+  * le type de distribution que l'on
+  * veut pour les mutations.
+  */
 
 /**
  * @brief
@@ -24,7 +30,7 @@ class World
 {
 public:
 
-    World(int id, int NPatch, double delta, double c, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
+    World(int id, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
     double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
     void run(void); /**< @brief Méthode qui lance la simulation */
@@ -43,9 +49,10 @@ private:
 
     std::vector<Patch> patches; /**< @brief Vecteur qui contient tous les patchs du monde */
 
-    double delta; /**< @brief  La dépression de consanguinité */
+    double delta; /**< @brief La dépression de consanguinité */
     double c; /**< @brief Le coût de dispersion */
 
+    distrMut typeMut; /**< @brief La distribution de l'ampleur mutation */
     double mu; /**< @brief La probabilité de mutation */
     double sigmaZ; /**< @brief L'ampleur de la mutation */
 

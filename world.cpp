@@ -11,7 +11,7 @@
 #include "patch.h"
 #include "individual.h"
 
-World::World(int id, int NPatch, double delta, double c, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
+World::World(int id, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
              double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
 {
     int i = 0;
@@ -23,6 +23,7 @@ World::World(int id, int NPatch, double delta, double c, double mu, double sigma
     this->delta = delta;
     this->c = c;
 
+    this->typeMut = (distrMut)typeMut;
     this->mu = mu;
     this->sigmaZ = sigmaZ;
 
@@ -168,7 +169,7 @@ void World::createNextGen (int id)
         chosenMother = chosenMother/2;
 
         newInd(id%2, patchMother, chosenMother, autof);
-        tmp[id%2][i].mutation(mu, sigmaZ);
+        tmp[id%2][i].mutation(mu, sigmaZ, typeMut);
     }
 
     /* Au premier patch, rien à faire */

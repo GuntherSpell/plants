@@ -7,6 +7,13 @@
  * @file
  */
 
+
+typedef enum _mut_
+{
+    gaussian = 0,
+    uniform = 1,
+} distrMut;
+
 /**
  * @brief
  * Contient les caractéristiques d'un individu,
@@ -33,10 +40,8 @@ public:
      *
      * @param mu        La probabilité de mutation
      * @param sigmaZ    L'ampleur de la mutation.
-     * Mathématiquement, il s'agit de l'écart-type
-     * de la loi normale.
      */
-    void mutation(double mu, double sigmaZ);
+    void mutation(double mu, double sigmaZ, distrMut typeMut);
 
     /**
      * @brief
@@ -54,6 +59,26 @@ public:
      * @param press         Le vecteur de pression à remplir
      */
     void calcPress(double delta, double c, bool pollenized, bool disp, std::vector<double>& press);
+
+private:
+
+     /**
+      * @brief
+      * Crée une mutation selon une loi uniforme.
+      *
+      * @param sigmaZ   L'ampleur de la mutation.
+      * @param t        Valeur du trait à muter.
+      */
+    double unifMutation (double sigmaZ, double t);
+
+    /**
+      * @brief
+      * Crée une mutation selon une loi normale.
+      *
+      * @param sigmaZ   L'ampleur de la mutation.
+      * @param t        Valeur du trait à muter.
+      */
+    double gaussMutation (double sigmaZ, double t);
 };
 
 

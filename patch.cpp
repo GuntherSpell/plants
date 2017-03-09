@@ -28,7 +28,7 @@ void Patch::isPollenized(void)
     std::default_random_engine generator (seed);
 
     /* On crée une série uniforme entre 0 et 1 */
-    std::uniform_real_distribution<> unif(0, 1);
+    std::uniform_real_distribution<double> unif(0, 1);
 
     if (unif(generator) <= p) {pollenized = true;}
     else {pollenized = false;}

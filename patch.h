@@ -46,7 +46,6 @@ public:
      */
     void getPression(double delta, double c, bool disp, std::vector<double>& press);
 
-
 private:
 
     double p; /**< @brief La probabilité d'être pollinisé */
