@@ -78,7 +78,7 @@ double Individual::unifMutation (double sigmaZ, double t)
     double upperBound = t + sigmaZ;
 
     if(lowerBound < 0) {lowerBound = 0;}
-    if(upperBound > 1) {lowerBound = 1;}
+    if(upperBound > 1) {upperBound = 1;}
 
     std::uniform_real_distribution<double> unif(lowerBound, upperBound);
 

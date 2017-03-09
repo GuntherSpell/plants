@@ -242,7 +242,7 @@ void World::writeHeader(std::ofstream& report)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
-    report << "mu=" << mu << " sigmaZ=" << sigmaZ << std::endl;
+    report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ << std::endl;
     report << "Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
     report << "Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
