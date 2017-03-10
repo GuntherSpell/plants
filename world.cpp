@@ -45,7 +45,7 @@ World::World(int id, int NPatch, double delta, double c, int typeMut, double mu,
         patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
     }
 
-    writeHeader(report);
+    writeHeader();
 }
 
 double World::distr(double minVal, double maxVal, double sigma, int i)
@@ -59,11 +59,10 @@ void World::run(void)
 
     std::cout << "Progression du monde " << id << " :" << std::endl;
     printProgress(0);
-    writeReport(0, report);
 
     for(i=0; i<=NGen; i++)
     {
-        if(i%genReport == 0) {writeReport(i, report);}
+        if(i%genReport == 0) {writeReport(i);}
 
         for(j=0; j<NPatch; j++) {createNextGen(j);}
 
@@ -189,7 +188,7 @@ void World::createNextGen (int id)
 
 void World::newInd(int whr, int patchMother, int mother, bool autof)
 {
-    std::array<double,2> fatherTraits;
+    std::array<double,2> fatherTraits = {0,0};
 
     /* Issue d'autof */
     if(autof)
@@ -217,7 +216,7 @@ void World::getFather(int idPatch, int mother, std::array<double,2>& fatherTrait
     /* Générateur de nombres pseudo-aléatoires */
     std::default_random_engine generator (seed);
 
-    std::uniform_int_distribution<> unif(0, patches[idPatch].K-1);
+    std::uniform_int_distribution<int> unif(0, patches[idPatch].K-1);
 
     do {father = unif(generator);}
     while (father == mother); //Pas de pseudo allofécondation
@@ -238,7 +237,7 @@ void World::printProgress(int progress)
     std::cout << "]" << std::endl;
 }
 
-void World::writeHeader(std::ofstream& report)
+void World::writeHeader(void)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
@@ -248,7 +247,7 @@ void World::writeHeader(std::ofstream& report)
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 }
 
-void World::writeReport(int gen, std::ofstream& report)
+void World::writeReport(int gen)
 {
     int i = 0, j = 0;
 

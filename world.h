@@ -150,7 +150,7 @@ private:
      *
      * @param report    le fichier où écrire le rapport
      */
-    void writeHeader(std::ofstream& report);
+    void writeHeader(void);
 
     /**
      * @brief
@@ -159,7 +159,7 @@ private:
      * @param gen       la génération pour laquelle il faut écrire le rapport
      * @param report    le fichier où écrire le rapport
      */
-    void writeReport(int gen, std::ofstream& report);
+    void writeReport(int gen);
 };
 
 #endif // WORLD_H_INCLUDED

@@ -1,5 +1,4 @@
 #include "engine.h"
-#include "world.h"
 
 int main()
 {
