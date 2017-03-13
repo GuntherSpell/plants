@@ -70,6 +70,8 @@ private:
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
 
+    std::default_random_engine generator; /**< @brief Générateur de nombre aléatoire */
+
 
     /**
      * @brief Deux vecteurs qui contiennent temporairement la nouvelle génération d'un patch

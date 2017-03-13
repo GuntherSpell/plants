@@ -2,6 +2,7 @@
 #define INDIVIDUAL_H_INCLUDED
 
 #include <vector>
+#include <random>
 
 /**
  * @file
@@ -61,6 +62,8 @@ public:
     void calcPress(double delta, double c, bool pollenized, bool disp, std::vector<double>& press);
 
 private:
+
+    std::default_random_engine generator; /**< @brief Générateur de nombre aléatoire */
 
      /**
       * @brief

@@ -45,6 +45,9 @@ World::World(int id, int NPatch, double delta, double c, int typeMut, double mu,
         patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
     }
 
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    generator.seed (seed);
+
     writeHeader();
 }
 
@@ -80,12 +83,6 @@ void World::run(void)
 void World::createNextGen (int id)
 {
     int i = 0;
-
-    /* Seed basée sur l'horloge pour le générateur de nombres aléatoires */
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
-    /* Générateur de nombres pseudo-aléatoires */
-    std::default_random_engine generator (seed);
 
     /* Vecteur qui contient toutes les mères possibles.
        Elles sont numérotées de 0 à n. */
@@ -209,12 +206,6 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
 void World::getFather(int idPatch, int mother, std::array<double,2>& fatherTraits)
 {
     int father = 0;
-
-    /* Seed basée sur l'horloge pour le générateur de nombres aléatoires */
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
-    /* Générateur de nombres pseudo-aléatoires */
-    std::default_random_engine generator (seed);
 
     std::uniform_int_distribution<int> unif(0, patches[idPatch].K-1);
 
