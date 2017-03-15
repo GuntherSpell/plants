@@ -13,9 +13,11 @@
  *
  * Pour plus d'informations, regarder le fichier config.txt
  *
- * @param param vecteur où mettre les paramètres du (des) monde(s)
+ * @param param         Vecteur où mettre les paramètres du (des) monde(s)
+ * @param NWorld        Valeur du nombre de mondes à modifier
+ * @param NReplicats    Valeur du nombre de réplicats à modifier
  */
-int getParamsFromTxt(std::vector<double>& params);
+void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats);
 
 /**
  * @brief
