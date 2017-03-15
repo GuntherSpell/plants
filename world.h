@@ -78,7 +78,7 @@ private:
      *
      * Pour plus de détails, voir la méthode createNextGen
      */
-    std::array<std::vector<Individual>,2> tmp;
+    std::array<std::vector<Individual>,2> juveniles;
 
     /**
      * @brief

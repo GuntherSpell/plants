@@ -165,21 +165,21 @@ void World::createNextGen (int id)
         chosenMother = chosenMother/2;
 
         newInd(id%2, patchMother, chosenMother, autof);
-        tmp[id%2][i].mutation(mu, sigmaZ, typeMut);
+        juveniles[id%2][i].mutation(mu, sigmaZ, typeMut);
     }
 
     /* Au premier patch, rien à faire */
     if(id != 0)
     {
-        patches[id - 1].population = tmp[(id-1)%2];
-        tmp[(id-1)%2].clear();
+        patches[id - 1].population = juveniles[(id-1)%2];
+        juveniles[(id-1)%2].clear();
     }
 
     /* Au dernier patch, on remplace la génération */
     if(id == NPatch - 1)
     {
-        patches[id].population = tmp[(id)%2];
-        tmp[(id)%2].clear();
+        patches[id].population = juveniles[(id)%2];
+        juveniles[(id)%2].clear();
     }
 }
 
@@ -190,7 +190,7 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     /* Issue d'autof */
     if(autof)
     {
-        tmp[whr].emplace_back(patches[patchMother].population[mother].s,
+        juveniles[whr].emplace_back(patches[patchMother].population[mother].s,
                               patches[patchMother].population[mother].d);
     }
 
@@ -198,7 +198,7 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     else
     {
         getFather(patchMother, mother, fatherTraits);
-        tmp[whr].emplace_back((patches[patchMother].population[mother].s + fatherTraits[0])/2,
+        juveniles[whr].emplace_back((patches[patchMother].population[mother].s + fatherTraits[0])/2,
                               (patches[patchMother].population[mother].d + fatherTraits[1])/2);
     }
 }
