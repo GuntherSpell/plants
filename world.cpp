@@ -40,6 +40,13 @@ World::World(int id, int NPatch, double delta, double c, int typeMut, double mu,
     report.open ("report_" + std::to_string(id) + ".txt");
     this->genReport = genReport;
 
+    /* Les lignes suivantes permettent de réserver
+    de la mémoire pour éviter les réallocations
+    qui peuvent diminuer les performances         */
+    patches.reserve(NPatch);
+    juveniles[0].reserve(Kmax);
+    juveniles[1].reserve(Kmax);
+
     for(i=0; i<NPatch; i++)
     {
         patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
@@ -98,9 +105,19 @@ void World::createNextGen (int id)
     /* Vecteur qui permet de savoir d'où vient la mère retenue */
     std::vector<int> fromPatch;
 
+    /* Les lignes suivantes permettent de réserver
+    de la mémoire pour éviter les réallocations
+    qui peuvent diminuer les performances         */
+    mother.reserve(6*Kmax +1);
+    press.reserve(6*Kmax);
+    fromPatch.reserve(6*Kmax);
+
     if (id != 0)
     {
         patches[id - 1].getPression(delta, c, true, press);
+
+        /* On peut vider le vecteur car il n'est plus utile. */
+        clear_and_freeVector(patches[id - 1].dispSeeds);
 
         for (i=0; i<2*patches[id - 1].K; i++)
         {
@@ -214,6 +231,12 @@ void World::getFather(int idPatch, int mother, std::array<double,2>& fatherTrait
 
     fatherTraits[0] = patches[idPatch].population[father].s;
     fatherTraits[1] = patches[idPatch].population[father].d;
+}
+
+void World::clear_and_freeVector(std::vector<double>& toClear)
+{
+    toClear.clear();
+    std::vector<double>().swap(toClear);
 }
 
 void World::printProgress(int progress)

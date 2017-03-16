@@ -70,9 +70,9 @@ double Individual::unifMutation (double sigmaZ, double t)
     return unif(generator);
 }
 
-void Individual::calcPress(double delta, double c, bool pollenized, bool disp, std::vector<double>& press)
+void Individual::calcPress(double delta, double c, bool pollenized, bool dispNeeded, std::vector<double>& press)
 {
-    if(disp)
+    if(dispNeeded)
     {
         press.push_back(s*(1-delta)*(d/2)*(1-c));
 

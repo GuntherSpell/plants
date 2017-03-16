@@ -162,6 +162,12 @@ private:
      * @param report    le fichier où écrire le rapport
      */
     void writeReport(int gen);
+
+    /**
+     * @brief
+     * Méthode qui permet de vider un vecteur et de de libérer entièrement la mémoire
+     */
+    void clear_and_freeVector(std::vector<double>& toClear);
 };
 
 #endif // WORLD_H_INCLUDED

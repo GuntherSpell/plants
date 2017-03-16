@@ -56,10 +56,10 @@ public:
      * @param delta         La dépression de consanguinité
      * @param c             Le coût de la dispersion
      * @param pollenized    L'état de pollinisation du patch de l'individu
-     * @param disp          Si on souhaite les pressions dispersantes ou résidentes
+     * @param dispNeeded    Si on souhaite les pressions dispersantes ou résidentes
      * @param press         Le vecteur de pression à remplir
      */
-    void calcPress(double delta, double c, bool pollenized, bool disp, std::vector<double>& press);
+    void calcPress(double delta, double c, bool pollenized, bool dispNeeded, std::vector<double>& press);
 
 private:
 

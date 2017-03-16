@@ -39,12 +39,20 @@ public:
      * Méthode qui rassemble toutes les pression de propagule d'un type
      * donné (dispersantes ou résidentes) de tous les individus du patch
      *
-     * @param delta     La dépression de consanguinité
-     * @param c         Le coût de dispersion
-     * @param disp      Si on souhaite les pressions dispersantes ou résidentes
-     * @param press     Le vecteur de pression à remplir
+     * @param delta         La dépression de consanguinité
+     * @param c             Le coût de dispersion
+     * @param dispNeeded    Si on souhaite les pressions dispersantes ou résidentes
+     * @param press         Le vecteur de pression à remplir
      */
-    void getPression(double delta, double c, bool disp, std::vector<double>& press);
+    void getPression(double delta, double c, bool dispNeeded, std::vector<double>& press);
+
+    /**
+      * @brief
+      * Vector qui contient les pressions en graines dispersantes.
+      * Cela permet de ne pas devoir les calculer 2 fois quand
+      * on est au patch à gauche puis à droite.
+      */
+    std::vector<double> dispSeeds;
 
 private:
 

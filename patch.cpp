@@ -13,6 +13,12 @@ Patch::Patch(double p, int K, double sInit, double dInit)
     this->K = K;
     isPollenized();
 
+    /* Les lignes suivantes permettent de réserver
+    de la mémoire pour éviter les réallocations
+    qui peuvent diminuer les performances         */
+    population.reserve(K);
+    dispSeeds.reserve(2*K);
+
     for(i=0; i<K; i++)
     {
         population.emplace_back(sInit, dInit);
@@ -24,19 +30,34 @@ Patch::Patch(double p, int K, double sInit, double dInit)
 
 void Patch::isPollenized(void)
 {
-    /* On crée une série uniforme entre 0 et 1 */
     std::uniform_real_distribution<double> unif(0, 1);
 
     if (unif(generator) <= p) {pollenized = true;}
     else {pollenized = false;}
 }
 
-void Patch::getPression(double delta, double c, bool disp, std::vector<double>& press)
+void Patch::getPression(double delta, double c, bool dispNeeded, std::vector<double>& press)
 {
     int i = 0;
 
-    for(i=0; i<K; i++)
+    if (dispNeeded)
     {
-        population[i].calcPress(delta, c, pollenized, disp, press);
+        if(dispSeeds.empty()) //Si le vecteur est vide, il faut le remplir.
+        {
+            for(i=0; i<K; i++)
+            {
+                population[i].calcPress(delta, c, pollenized, dispNeeded, dispSeeds);
+            }
+        }
+
+        press.insert(press.end(), dispSeeds.begin(), dispSeeds.end());
+    }
+
+    else
+    {
+        for(i=0; i<K; i++)
+        {
+            population[i].calcPress(delta, c, pollenized, dispNeeded, press);
+        }
     }
 }
