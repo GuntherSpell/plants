@@ -21,7 +21,7 @@ void Individual::mutation(double mu, double sigmaZ, distrMut typeMut)
     double t = d;
 
     /* On crée une série uniforme entre 0 et 1 */
-    std::uniform_real_distribution<double> unif(0.0, 1.0);
+    std::uniform_real_distribution<double> unif(0, 1);
 
     /* Y a-t-il mutation ? */
     if(unif(generator) < mu)

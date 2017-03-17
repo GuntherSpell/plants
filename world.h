@@ -30,7 +30,7 @@ class World
 {
 public:
 
-    World(int id, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
+    World(int idWorld, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
     double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
     void run(void); /**< @brief Méthode qui lance la simulation */
@@ -43,7 +43,7 @@ private:
      * Utile uniquement pour générer des rapports
      * différents s'il y a plusieurs mondes.
      */
-    int id;
+    int idWorld;
 
     int NPatch; /**< @brief Nombre de patchs du monde */
 
@@ -63,9 +63,6 @@ private:
     double Pmin;/**< @brief La probabilité maximale qu'un patch soit pollinisé */
     double Pmax; /**< @brief La probabilité minimale qu'un patch soit pollinisé */
     double sigmaP; /**< @brief Le degré de varition de P dans l'espace */
-
-    double sInit; /**< @brief La valeur initiale du taux d'autofécondation */
-    double dInit; /**< @brief La valeur initiale du taux de disperion */
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
@@ -89,7 +86,7 @@ private:
      * @param sigma     Degré de variation
      * @param i         La position du patch
      */
-     double distr(double minVal, double maxVal, double sigma, int i);
+     double distr(double minVal, double maxVal, double sigma, int posPatch);
 
     /**
      * @brief
@@ -104,10 +101,10 @@ private:
      * pour les calculs (i.e. quand on a créé la génération à gauche
      * du patch, puisqu'on progresse de gauche à droite).
      *
-     * @param id    L'identifiant du patch dont on souhaite créer
-     *              la nouvelle génération.
+     * @param idPatch   L'identifiant du patch dont on souhaite créer
+     *                  la nouvelle génération.
      */
-    void createNextGen(int id);
+    void createNextGen(int idPatch);
 
     /**
      * @brief
@@ -134,7 +131,7 @@ private:
      * @param mother        identifiant de la mère
      * @param fatherTraits  vecteur qui stocke les traits du père
      */
-    void getFather(int idPatch, int mother, std::array<double,2>& fatherTraits);
+    void getFather(int patchMother, int mother, std::array<double,2>& fatherTraits);
 
     /**
      * @brief

@@ -11,12 +11,12 @@
 #include "patch.h"
 #include "individual.h"
 
-World::World(int id, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
+World::World(int idWorld, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
              double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
 {
     int i = 0;
 
-    this->id = id;
+    this->idWorld = idWorld;
 
     this->NPatch = NPatch;
 
@@ -37,12 +37,12 @@ World::World(int id, int NPatch, double delta, double c, int typeMut, double mu,
 
     this->NGen = NGen;
 
-    report.open ("report_" + std::to_string(id) + ".txt");
+    report.open ("report_" + std::to_string(idWorld) + ".txt");
     this->genReport = genReport;
 
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
-    qui peuvent diminuer les performances         */
+    qui peuvent diminuer les performances. */
     patches.reserve(NPatch);
     juveniles[0].reserve(Kmax);
     juveniles[1].reserve(Kmax);
@@ -58,16 +58,16 @@ World::World(int id, int NPatch, double delta, double c, int typeMut, double mu,
     writeHeader();
 }
 
-double World::distr(double minVal, double maxVal, double sigma, int i)
+double World::distr(double minVal, double maxVal, double sigma, int posPatch)
 {
-    return (minVal + ((maxVal - minVal) * exp( - ((i-(NPatch/2))*(i-(NPatch/2))) / (2*sigma))));
+    return (minVal + ((maxVal - minVal) * exp( - ((posPatch-(NPatch/2))*(posPatch-(NPatch/2))) / (2*sigma))));
 }
 
 void World::run(void)
 {
     int i = 0, j = 0, progress = 0;
 
-    std::cout << "Progression du monde " << id << " :" << std::endl;
+    std::cout << "Progression du monde " << idWorld << " :" << std::endl;
     printProgress(0);
 
     for(i=0; i<=NGen; i++)
@@ -87,7 +87,7 @@ void World::run(void)
     }
 }
 
-void World::createNextGen (int id)
+void World::createNextGen (int idPatch)
 {
     int i = 0;
 
@@ -107,38 +107,38 @@ void World::createNextGen (int id)
 
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
-    qui peuvent diminuer les performances         */
+    qui peuvent diminuer les performances. */
     mother.reserve(6*Kmax +1);
     press.reserve(6*Kmax);
     fromPatch.reserve(6*Kmax);
 
-    if (id != 0)
+    if (idPatch != 0)
     {
-        patches[id - 1].getPression(delta, c, true, press);
+        patches[idPatch - 1].getPression(delta, c, true, press);
 
         /* On peut vider le vecteur car il n'est plus utile. */
-        clear_and_freeVector(patches[id - 1].dispSeeds);
+        clear_and_freeVector(patches[idPatch - 1].dispSeeds);
 
-        for (i=0; i<2*patches[id - 1].K; i++)
+        for (i=0; i<2*patches[idPatch - 1].K; i++)
         {
-            fromPatch.push_back(id - 1);
+            fromPatch.push_back(idPatch - 1);
         }
     }
 
-    patches[id].getPression(delta, c, false, press);
+    patches[idPatch].getPression(delta, c, false, press);
 
-    for (i=0; i<2*patches[id].K; i++)
+    for (i=0; i<2*patches[idPatch].K; i++)
     {
-        fromPatch.push_back(id);
+        fromPatch.push_back(idPatch);
     }
 
-    if (id != NPatch - 1)
+    if (idPatch != NPatch - 1)
     {
-        patches[id + 1].getPression(delta, c, true, press);
+        patches[idPatch + 1].getPression(delta, c, true, press);
 
-        for (i=0; i<2*patches[id + 1].K; i++)
+        for (i=0; i<2*patches[idPatch + 1].K; i++)
         {
-            fromPatch.push_back(id + 1);
+            fromPatch.push_back(idPatch + 1);
         }
     }
 
@@ -150,7 +150,7 @@ void World::createNextGen (int id)
     /* Objet qui permet de générer des nombres aléatoires pondérés. */
     std::piecewise_constant_distribution<double> weighted (mother.begin(), mother.end(), press.begin());
 
-    for(i=0; i<patches[id].K; i++)
+    for(i=0; i<patches[idPatch].K; i++)
     {
         int chosenMother = weighted(generator);
         int patchMother = fromPatch[chosenMother];
@@ -158,45 +158,47 @@ void World::createNextGen (int id)
         bool autof = false;
         if (chosenMother%2 == 0) {autof = true;}
 
-        if (id == 0)
+        if (idPatch == 0)
         {
-            if (fromPatch[chosenMother] == id + 1)
+            if (fromPatch[chosenMother] == idPatch + 1)
             {
-                chosenMother = chosenMother - 2*patches[id].K;
+                chosenMother = chosenMother - 2*patches[idPatch].K;
             }
         }
 
         else
         {
-            if (fromPatch[chosenMother] == id)
+            if (fromPatch[chosenMother] == idPatch)
             {
-                chosenMother = chosenMother - 2*patches[id - 1].K;
+                chosenMother = chosenMother - 2*patches[idPatch - 1].K;
             }
 
-            if (fromPatch[chosenMother] == id + 1)
+            if (fromPatch[chosenMother] == idPatch + 1)
             {
-                chosenMother = chosenMother - 2*patches[id - 1].K - 2*patches[id].K;
+                chosenMother = chosenMother - 2*patches[idPatch - 1].K - 2*patches[idPatch].K;
             }
         }
 
         chosenMother = chosenMother/2;
 
-        newInd(id%2, patchMother, chosenMother, autof);
-        juveniles[id%2][i].mutation(mu, sigmaZ, typeMut);
+        /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
+        Pour les patchs impairs, dans le 2nd. */
+        newInd(idPatch%2, patchMother, chosenMother, autof);
+        juveniles[idPatch%2][i].mutation(mu, sigmaZ, typeMut);
     }
 
-    /* Au premier patch, rien à faire */
-    if(id != 0)
+    /* Au premier patch, rien à faire. */
+    if(idPatch != 0)
     {
-        patches[id - 1].population = juveniles[(id-1)%2];
-        juveniles[(id-1)%2].clear();
+        patches[idPatch - 1].population = juveniles[(idPatch-1)%2];
+        juveniles[(idPatch-1)%2].clear();
     }
 
-    /* Au dernier patch, on remplace la génération */
-    if(id == NPatch - 1)
+    /* Au dernier patch, on remplace la génération. */
+    if(idPatch == NPatch - 1)
     {
-        patches[id].population = juveniles[(id)%2];
-        juveniles[(id)%2].clear();
+        patches[idPatch].population = juveniles[idPatch%2];
+        juveniles[idPatch%2].clear();
     }
 }
 
@@ -220,17 +222,17 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     }
 }
 
-void World::getFather(int idPatch, int mother, std::array<double,2>& fatherTraits)
+void World::getFather(int patchMother, int mother, std::array<double,2>& fatherTraits)
 {
     int father = 0;
 
-    std::uniform_int_distribution<int> unif(0, patches[idPatch].K-1);
+    std::uniform_int_distribution<int> unif(0, patches[patchMother].K-1);
 
     do {father = unif(generator);}
     while (father == mother); //Pas de pseudo allofécondation
 
-    fatherTraits[0] = patches[idPatch].population[father].s;
-    fatherTraits[1] = patches[idPatch].population[father].d;
+    fatherTraits[0] = patches[patchMother].population[father].s;
+    fatherTraits[1] = patches[patchMother].population[father].d;
 }
 
 void World::clear_and_freeVector(std::vector<double>& toClear)
@@ -265,6 +267,7 @@ void World::writeReport(int gen)
 {
     int i = 0, j = 0;
 
+
     for(j=0; j<NPatch; j++)
     {
         for(i=0; i<patches[j].K; i++)
@@ -276,6 +279,7 @@ void World::writeReport(int gen)
             report << patches[j].population[i].d << std::endl;
         }
     }
+
 
     if (gen == NGen) {report.close();}
 }
