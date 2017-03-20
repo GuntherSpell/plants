@@ -15,7 +15,7 @@ Patch::Patch(double p, int K, double sInit, double dInit)
 
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
-    qui peuvent diminuer les performances         */
+    qui peuvent diminuer les performances. */
     population.reserve(K);
     dispSeeds.reserve(2*K);
 
@@ -32,8 +32,8 @@ void Patch::isPollenized(void)
 {
     std::uniform_real_distribution<double> unif(0, 1);
 
+    pollenized = false;
     if (unif(generator) <= p) {pollenized = true;}
-    else {pollenized = false;}
 }
 
 void Patch::getPression(double delta, double c, bool dispNeeded, std::vector<double>& press)

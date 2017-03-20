@@ -18,6 +18,11 @@
   * le type de distribution que l'on
   * veut pour les mutations.
   */
+typedef enum _mut_
+{
+    gaussian = 0,
+    uniform = 1,
+} distrMut;
 
 /**
  * @brief
@@ -30,20 +35,30 @@ class World
 {
 public:
 
+    /**
+     * @brief
+     * Constructeur d'un monde
+     *
+     * @param idWorld   Permet de générer des rapports différents pour chaque monde.
+     * @param Kmin      La capacité d'accueil minimale.
+     * @param Kmax      La capacité d'accueil maximale.
+     * @param sigmaK    Le degré de varition de K dans l'espace.
+     * @param Pmin      La probabilité maximale qu'un patch soit pollinisé.
+     * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
+     * @param sigmaP    Le degré de varition de P dans l'espace.
+     */
     World(int idWorld, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
     double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
-    void run(void); /**< @brief Méthode qui lance la simulation */
+    /**
+     * @brief
+     * Méthode qui lance la simulation
+     *
+     * @param idWorld   Permet d'identifier le monde sur l'écran de progression
+     */
+    void run(int idWorld);
 
 private:
-
-    /**
-     * @brief Identifiant du monde.
-     *
-     * Utile uniquement pour générer des rapports
-     * différents s'il y a plusieurs mondes.
-     */
-    int idWorld;
 
     int NPatch; /**< @brief Nombre de patchs du monde */
 
@@ -56,18 +71,10 @@ private:
     double mu; /**< @brief La probabilité de mutation */
     double sigmaZ; /**< @brief L'ampleur de la mutation */
 
-    int Kmin; /**< @brief La capacité d'accueil minimale */
-    int Kmax; /**< @brief La capacité d'accueil maximale */
-    int sigmaK; /**< @brief Le degré de varition de K dans l'espace */
-
-    double Pmin;/**< @brief La probabilité maximale qu'un patch soit pollinisé */
-    double Pmax; /**< @brief La probabilité minimale qu'un patch soit pollinisé */
-    double sigmaP; /**< @brief Le degré de varition de P dans l'espace */
-
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
 
-    std::default_random_engine generator; /**< @brief Générateur de nombre aléatoire */
+    std::mt19937_64 generator; /**< @brief Générateur de nombre aléatoire */
 
 
     /**
@@ -120,6 +127,31 @@ private:
 
     /**
      * @brief
+     * Méthode qui applique une mutation aléatoire
+     * sur un des traits de l'individu
+     *
+     * @param IndToMutate   L'individu à muter
+     */
+    void mutation(Individual& IndToMutate);
+
+    /**
+      * @brief
+      * Crée une mutation selon une loi uniforme.
+      *
+      * @param t        Valeur du trait à muter.
+      */
+    double unifMutation (double t);
+
+    /**
+      * @brief
+      * Crée une mutation selon une loi normale.
+      *
+      * @param t        Valeur du trait à muter.
+      */
+    double gaussMutation (double t);
+
+    /**
+     * @brief
      * Méthode qui cherche un père aléatoirement dans le patch de la mère
      * si le mode de reproduction est l'allofécondation.
      *
@@ -147,16 +179,20 @@ private:
      * @brief
      * Méthode qui écrit l'entête dans le rapport
      *
-     * @param report    le fichier où écrire le rapport
+     * @param Kmin      La capacité d'accueil minimale.
+     * @param Kmax      La capacité d'accueil maximale.
+     * @param sigmaK    Le degré de varition de K dans l'espace.
+     * @param Pmin      La probabilité maximale qu'un patch soit pollinisé.
+     * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
+     * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    void writeHeader(void);
+    void writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP);
 
     /**
      * @brief
      * Méthode qui écrit un rapport pour un génération donnée
      *
      * @param gen       la génération pour laquelle il faut écrire le rapport
-     * @param report    le fichier où écrire le rapport
      */
     void writeReport(int gen);
 

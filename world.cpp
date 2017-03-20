@@ -16,8 +16,6 @@ World::World(int idWorld, int NPatch, double delta, double c, int typeMut, doubl
 {
     int i = 0;
 
-    this->idWorld = idWorld;
-
     this->NPatch = NPatch;
 
     this->delta = delta;
@@ -26,14 +24,6 @@ World::World(int idWorld, int NPatch, double delta, double c, int typeMut, doubl
     this->typeMut = (distrMut)typeMut;
     this->mu = mu;
     this->sigmaZ = sigmaZ;
-
-    this->Kmin = Kmin;
-    this->Kmax = Kmax;
-    this->sigmaK = sigmaK;
-
-    this->Pmin = Pmin;
-    this->Pmax = Pmax;
-    this->sigmaP = sigmaP;
 
     this->NGen = NGen;
 
@@ -55,7 +45,7 @@ World::World(int idWorld, int NPatch, double delta, double c, int typeMut, doubl
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     generator.seed (seed);
 
-    writeHeader();
+    writeHeader(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
 }
 
 double World::distr(double minVal, double maxVal, double sigma, int posPatch)
@@ -63,7 +53,7 @@ double World::distr(double minVal, double maxVal, double sigma, int posPatch)
     return (minVal + ((maxVal - minVal) * exp( - ((posPatch-(NPatch/2))*(posPatch-(NPatch/2))) / (2*sigma))));
 }
 
-void World::run(void)
+void World::run(int idWorld)
 {
     int i = 0, j = 0, progress = 0;
 
@@ -108,9 +98,9 @@ void World::createNextGen (int idPatch)
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
-    mother.reserve(6*Kmax +1);
-    press.reserve(6*Kmax);
-    fromPatch.reserve(6*Kmax);
+    mother.reserve(6*patches[idPatch].K +1);
+    press.reserve(6*patches[idPatch].K);
+    fromPatch.reserve(6*patches[idPatch].K);
 
     if (idPatch != 0)
     {
@@ -119,27 +109,18 @@ void World::createNextGen (int idPatch)
         /* On peut vider le vecteur car il n'est plus utile. */
         clear_and_freeVector(patches[idPatch - 1].dispSeeds);
 
-        for (i=0; i<2*patches[idPatch - 1].K; i++)
-        {
-            fromPatch.push_back(idPatch - 1);
-        }
+        fromPatch.insert(fromPatch.end(), 2*patches[idPatch - 1].K, idPatch - 1);
     }
 
     patches[idPatch].getPression(delta, c, false, press);
 
-    for (i=0; i<2*patches[idPatch].K; i++)
-    {
-        fromPatch.push_back(idPatch);
-    }
+    fromPatch.insert(fromPatch.end(), 2*patches[idPatch].K, idPatch);
 
     if (idPatch != NPatch - 1)
     {
         patches[idPatch + 1].getPression(delta, c, true, press);
 
-        for (i=0; i<2*patches[idPatch + 1].K; i++)
-        {
-            fromPatch.push_back(idPatch + 1);
-        }
+        fromPatch.insert(fromPatch.end(), 2*patches[idPatch + 1].K, idPatch + 1);
     }
 
     for (i=0; i<(int)press.size() + 1; i++)
@@ -184,7 +165,7 @@ void World::createNextGen (int idPatch)
         /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
         Pour les patchs impairs, dans le 2nd. */
         newInd(idPatch%2, patchMother, chosenMother, autof);
-        juveniles[idPatch%2][i].mutation(mu, sigmaZ, typeMut);
+        mutation(juveniles[idPatch%2][i]);
     }
 
     /* Au premier patch, rien à faire. */
@@ -222,6 +203,62 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     }
 }
 
+void World::mutation(Individual& IndToMutate)
+{
+    /* Pour «retenir» quel trait doit muter
+       false: d     true: s */
+    bool sWasChosen = false;
+    double t = IndToMutate.d;
+
+    std::uniform_real_distribution<double> unif(0, 1);
+
+    /* Y a-t-il mutation ? */
+    if(unif(generator) < mu)
+    {
+        /* On choisit quel trait mute */
+        if(unif(generator) >= 0.5)
+        {
+            t = IndToMutate.s;
+            sWasChosen = true;
+        }
+
+        switch(typeMut)
+        {
+            case gaussian:
+                t = gaussMutation(t);
+                break;
+
+            case uniform:
+                t = unifMutation(t);
+                break;
+        }
+
+        if (sWasChosen) {IndToMutate.s = t;}
+        else {IndToMutate.d = t;}
+    }
+}
+
+double World::gaussMutation (double t)
+{
+    std::normal_distribution<double> gauss(0,sigmaZ);
+    double deltaMu = gauss(generator);
+
+    return t*exp(deltaMu)/((exp(deltaMu) - 1)*t + 1);
+}
+
+double World::unifMutation (double t)
+{
+    double lowerBound = t - sigmaZ;
+    double upperBound = t + sigmaZ;
+
+    if(lowerBound < 0) {lowerBound = 0;}
+    if(upperBound > 1) {upperBound = 1;}
+
+    std::uniform_real_distribution<double> unif(lowerBound, upperBound);
+
+    return unif(generator);
+}
+
 void World::getFather(int patchMother, int mother, std::array<double,2>& fatherTraits)
 {
     int father = 0;
@@ -253,7 +290,7 @@ void World::printProgress(int progress)
     std::cout << "]" << std::endl;
 }
 
-void World::writeHeader(void)
+void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;

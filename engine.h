@@ -19,10 +19,7 @@
  */
 void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats);
 
-/**
- * @brief
- * Méthode qui lance la simulation pour tous les mondes
- */
+/** @brief Méthode qui lance la simulation pour tous les mondes */
 void runSimu(void);
 
 #endif // ENGINE_H_INCLUDED

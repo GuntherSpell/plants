@@ -2,7 +2,6 @@
 #define PATCH_H_INCLUDED
 
 #include <vector>
-#include <array>
 
 #include "individual.h"
 
@@ -56,7 +55,7 @@ public:
 
 private:
 
-    std::default_random_engine generator; /**< @brief Générateur de nombre aléatoire */
+    std::mt19937_64 generator; /**< @brief Générateur de nombre aléatoire */
 
     double p; /**< @brief La probabilité d'être pollinisé */
     bool pollenized; /**< @brief L'état de pollinisation */

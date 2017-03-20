@@ -41,7 +41,7 @@ void runSimu(void)
             params[5*NWorld+i], params[6*NWorld+i], params[7*NWorld+i], params[8*NWorld+i],
             params[9*NWorld+i], params[10*NWorld+i], params[11*NWorld+i], params[12*NWorld+i],
             params[13*NWorld+i], params[14*NWorld+i], params[15*NWorld+i]);
-            world.run();
+            world.run(i*NReplicats + j);
         }
     }
 }
