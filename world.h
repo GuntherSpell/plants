@@ -92,6 +92,8 @@ private:
      * @param maxVal    Valeur minimale
      * @param sigma     Degré de variation
      * @param i         La position du patch
+     *
+     * @return          La valeur pour le patch donné.
      */
      double distr(double minVal, double maxVal, double sigma, int posPatch);
 
@@ -139,6 +141,8 @@ private:
       * Crée une mutation selon une loi uniforme.
       *
       * @param t        Valeur du trait à muter.
+      *
+      * @return         La valeur du trait après mutation.
       */
     double unifMutation (double t);
 
@@ -147,6 +151,8 @@ private:
       * Crée une mutation selon une loi normale.
       *
       * @param t        Valeur du trait à muter.
+      *
+      * @return         La valeur du trait après mutation.
       */
     double gaussMutation (double t);
 
@@ -161,9 +167,10 @@ private:
      *
      * @param idPatch       patch de la mère
      * @param mother        identifiant de la mère
-     * @param fatherTraits  vecteur qui stocke les traits du père
+     *
+     * @return              L'identifiant du père
      */
-    void getFather(int patchMother, int mother, std::array<double,2>& fatherTraits);
+    int getFather(int patchMother, int mother);
 
     /**
      * @brief

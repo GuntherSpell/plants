@@ -81,8 +81,10 @@ void World::createNextGen (int idPatch)
 {
     int i = 0;
 
-    /* Vecteur qui contient toutes les mères possibles.
-       Elles sont numérotées de 0 à n. */
+    /* Vecteur qui contient tous les mères possibles.
+       Elles sont numérotées de 0 à n.
+       Les numéros impairs sont issus d'allof.
+       Les numéros pairs sont issus d'autof.*/
     std::vector<int> mother;
 
     /* Vecteur qui contient toutes les pressions
@@ -141,7 +143,7 @@ void World::createNextGen (int idPatch)
 
         if (idPatch == 0)
         {
-            if (fromPatch[chosenMother] == idPatch + 1)
+            if (patchMother == idPatch + 1)
             {
                 chosenMother = chosenMother - 2*patches[idPatch].K;
             }
@@ -149,12 +151,12 @@ void World::createNextGen (int idPatch)
 
         else
         {
-            if (fromPatch[chosenMother] == idPatch)
+            if (patchMother == idPatch)
             {
                 chosenMother = chosenMother - 2*patches[idPatch - 1].K;
             }
 
-            if (fromPatch[chosenMother] == idPatch + 1)
+            if (patchMother == idPatch + 1)
             {
                 chosenMother = chosenMother - 2*patches[idPatch - 1].K - 2*patches[idPatch].K;
             }
@@ -185,7 +187,6 @@ void World::createNextGen (int idPatch)
 
 void World::newInd(int whr, int patchMother, int mother, bool autof)
 {
-    std::array<double,2> fatherTraits = {0,0};
 
     /* Issue d'autof */
     if(autof)
@@ -197,9 +198,9 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     /* Sinon, on cherche un père */
     else
     {
-        getFather(patchMother, mother, fatherTraits);
-        juveniles[whr].emplace_back((patches[patchMother].population[mother].s + fatherTraits[0])/2,
-                              (patches[patchMother].population[mother].d + fatherTraits[1])/2);
+        int father = getFather(patchMother, mother);
+        juveniles[whr].emplace_back((patches[patchMother].population[mother].s + patches[patchMother].population[father].s)/2,
+                              (patches[patchMother].population[mother].d + patches[patchMother].population[father].d)/2);
     }
 }
 
@@ -259,7 +260,7 @@ double World::unifMutation (double t)
     return unif(generator);
 }
 
-void World::getFather(int patchMother, int mother, std::array<double,2>& fatherTraits)
+int World::getFather(int patchMother, int mother)
 {
     int father = 0;
 
@@ -268,8 +269,7 @@ void World::getFather(int patchMother, int mother, std::array<double,2>& fatherT
     do {father = unif(generator);}
     while (father == mother); //Pas de pseudo allofécondation
 
-    fatherTraits[0] = patches[patchMother].population[father].s;
-    fatherTraits[1] = patches[patchMother].population[father].d;
+    return father;
 }
 
 void World::clear_and_freeVector(std::vector<double>& toClear)
