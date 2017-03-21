@@ -13,11 +13,10 @@ Patch::Patch(double p, int K, double sInit, double dInit)
     this->K = K;
     isPollenized();
 
-    /* Les lignes suivantes permettent de réserver
+    /* La ligne suivante permet de réserver
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
     population.reserve(K);
-    dispSeeds.reserve(2*K);
 
     for(i=0; i<K; i++)
     {
@@ -44,6 +43,7 @@ void Patch::getPression(double delta, double c, bool dispNeeded, std::vector<dou
     {
         if(dispSeeds.empty()) //Si le vecteur est vide, il faut le remplir.
         {
+            dispSeeds.reserve(2*K);
             for(i=0; i<K; i++)
             {
                 population[i].calcPress(delta, c, pollenized, dispNeeded, dispSeeds);

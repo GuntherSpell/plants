@@ -28,13 +28,24 @@ public:
     /** @brief Un vecteur qui contient tous les individus du patch */
     std::vector<Individual> population;
 
-    /** @brief
+    /**
+     * @brief
+     * Vector qui contient les pressions en graines dispersantes.
+     * Cela permet de ne pas devoir les calculer 2 fois quand
+     * on est au patch à gauche puis à droite.
+     */
+    std::vector<double> dispSeeds;
+
+
+    /**
+     * @brief
      * Méthode qui détermine si le patch est pollinisé
      * en fonction de la probabilité qu'il le soit
      */
     void isPollenized(void);
 
-    /** @brief
+    /**
+     * @brief
      * Méthode qui rassemble toutes les pression de propagule d'un type
      * donné (dispersantes ou résidentes) de tous les individus du patch
      *
@@ -44,14 +55,6 @@ public:
      * @param press         Le vecteur de pression à remplir
      */
     void getPression(double delta, double c, bool dispNeeded, std::vector<double>& press);
-
-    /**
-      * @brief
-      * Vector qui contient les pressions en graines dispersantes.
-      * Cela permet de ne pas devoir les calculer 2 fois quand
-      * on est au patch à gauche puis à droite.
-      */
-    std::vector<double> dispSeeds;
 
 private:
 

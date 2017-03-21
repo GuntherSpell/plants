@@ -14,7 +14,7 @@
 
  /**
   * @brief
-  * Structure qui permet de choisir
+  * Énumération qui permet de choisir
   * le type de distribution que l'on
   * veut pour les mutations.
   */
@@ -110,8 +110,7 @@ private:
      * pour les calculs (i.e. quand on a créé la génération à gauche
      * du patch, puisqu'on progresse de gauche à droite).
      *
-     * @param idPatch   L'identifiant du patch dont on souhaite créer
-     *                  la nouvelle génération.
+     * @param idPatch   L'identifiant du patch dont on souhaite créer la nouvelle génération.
      */
     void createNextGen(int idPatch);
 
@@ -119,8 +118,7 @@ private:
      * @brief
      * Méthode qui crée un nouvel individu selon la propagule choisie
      *
-     * @param whr           indique dans quel vecteur temporaire il faut
-     *                      stocker la génération
+     * @param whr           indique dans quel vecteur temporaire il faut stocker la génération.
      * @param patchMother   identifiant du patch de la mère
      * @param mother        identifiant de la mère
      * @param autof         si la graine est issue d'autof ou non
@@ -199,13 +197,13 @@ private:
      * @brief
      * Méthode qui écrit un rapport pour un génération donnée
      *
-     * @param gen       la génération pour laquelle il faut écrire le rapport
+     * @param gen   la génération pour laquelle il faut écrire le rapport
      */
     void writeReport(int gen);
 
     /**
      * @brief
-     * Méthode qui permet de vider un vecteur et de de libérer entièrement la mémoire
+     * Méthode qui permet de vider un vecteur et de libérer entièrement la mémoire
      */
     void clear_and_freeVector(std::vector<double>& toClear);
 };

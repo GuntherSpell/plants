@@ -81,6 +81,10 @@ void World::createNextGen (int idPatch)
 {
     int i = 0;
 
+    /* Pour savoir la taille des vecteurs et ainsi réserver
+    en avance la mémoire pour améliorer les performances. */
+    int memoryToReserve = 2*patches[idPatch].K;
+
     /* Vecteur qui contient tous les mères possibles.
        Elles sont numérotées de 0 à n.
        Les numéros impairs sont issus d'allof.
@@ -97,12 +101,20 @@ void World::createNextGen (int idPatch)
     /* Vecteur qui permet de savoir d'où vient la mère retenue */
     std::vector<int> fromPatch;
 
+    /* Selon la position du patch, il faut réserver plus ou moins de mémoire. */
+    if(idPatch == 0) {memoryToReserve += 2*patches[idPatch + 1].K;}
+    else
+    {
+        if(idPatch == NPatch - 1) {memoryToReserve += 2*patches[idPatch - 1].K;}
+        else {memoryToReserve += 2*patches[idPatch - 1].K + 2*patches[idPatch + 1].K;}
+    }
+
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
-    mother.reserve(6*patches[idPatch].K +1);
-    press.reserve(6*patches[idPatch].K);
-    fromPatch.reserve(6*patches[idPatch].K);
+    mother.reserve(memoryToReserve + 1);
+    press.reserve(memoryToReserve);
+    fromPatch.reserve(memoryToReserve);
 
     if (idPatch != 0)
     {
@@ -195,7 +207,7 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
                               patches[patchMother].population[mother].d);
     }
 
-    /* Sinon, on cherche un père */
+    /* Sinon, on cherche un père. */
     else
     {
         int father = getFather(patchMother, mother);
@@ -318,6 +330,6 @@ void World::writeReport(int gen)
     }
 
 
-    if (gen == NGen) {report.close();}
+    if (NGen - gen < genReport) {report.close();}
 }
 
