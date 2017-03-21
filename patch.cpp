@@ -5,7 +5,7 @@
 #include "patch.h"
 #include "individual.h"
 
-Patch::Patch(double p, int K, double sInit, double dInit)
+Patch::Patch(double p, int K, double sInit, double dInit, bool relationshipIsManaged)
 {
     int i = 0;
 
@@ -18,9 +18,17 @@ Patch::Patch(double p, int K, double sInit, double dInit)
     qui peuvent diminuer les performances. */
     population.reserve(K);
 
+    if(relationshipIsManaged)
+    {
+        /* On part d'individus non apparentés.
+        NB: On ne gère pas la diagonale, c'est inutile. */
+        for(i=0; i<K - 1; i++) {relationship.emplace_back(K - 1 - i);}
+    }
+
     for(i=0; i<K; i++)
     {
-        population.emplace_back(sInit, dInit);
+        /* On initialise des individus non consanguins. */
+        population.emplace_back(sInit, dInit, 0);
     }
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();

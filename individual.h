@@ -18,10 +18,12 @@ class Individual
 {
 public:
 
-    Individual(double s, double d);
+    Individual(double s, double d, double f);
 
     double s; /**< @brief Le taux d'autofécondation */
     double d; /**< @brief Le taux de dispersion */
+
+    double f; /**< @brief Le taux de consanguinité */
 
     /**
      * @brief

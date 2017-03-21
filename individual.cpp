@@ -4,10 +4,12 @@
 
 #include "individual.h"
 
-Individual::Individual(double s, double d)
+Individual::Individual(double s, double d, double f)
 {
     this->s = s;
     this->d = d;
+
+    this->f = f;
 }
 
 void Individual::calcPress(double delta, double c, bool pollenized, bool dispNeeded, std::vector<double>& press)

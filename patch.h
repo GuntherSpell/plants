@@ -21,12 +21,14 @@ class Patch
 {
 public:
 
-    Patch(double p, int K, double sInit, double dInit);
+    Patch(double p, int K, double sInit, double dInit, bool relationshipIsManaged);
 
     int K; /**< @brief La capacité d'accueil du patch */
 
     /** @brief Un vecteur qui contient tous les individus du patch */
     std::vector<Individual> population;
+
+    std::vector<std::vector<double>> relationship;
 
     /**
      * @brief

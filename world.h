@@ -47,8 +47,8 @@ public:
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    World(int idWorld, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
-    double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
+    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
+          double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
     /**
      * @brief
@@ -66,6 +66,8 @@ private:
 
     double delta; /**< @brief La dépression de consanguinité */
     double c; /**< @brief Le coût de dispersion */
+
+    bool relationshipIsManaged;
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur mutation */
     double mu; /**< @brief La probabilité de mutation */

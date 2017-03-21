@@ -11,8 +11,8 @@
 #include "patch.h"
 #include "individual.h"
 
-World::World(int idWorld, int NPatch, double delta, double c, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
-             double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
+World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ,
+             int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
 {
     int i = 0;
 
@@ -20,6 +20,8 @@ World::World(int idWorld, int NPatch, double delta, double c, int typeMut, doubl
 
     this->delta = delta;
     this->c = c;
+
+    this->relationshipIsManaged = relationshipIsManaged;
 
     this->typeMut = (distrMut)typeMut;
     this->mu = mu;
@@ -39,7 +41,7 @@ World::World(int idWorld, int NPatch, double delta, double c, int typeMut, doubl
 
     for(i=0; i<NPatch; i++)
     {
-        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
+        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit, relationshipIsManaged);
     }
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -199,20 +201,25 @@ void World::createNextGen (int idPatch)
 
 void World::newInd(int whr, int patchMother, int mother, bool autof)
 {
+    double f = 0;
 
     /* Issue d'autof */
     if(autof)
     {
+        if(relationshipIsManaged) {f = 1/2 + patches[patchMother].population[mother].f/2;}
         juveniles[whr].emplace_back(patches[patchMother].population[mother].s,
-                              patches[patchMother].population[mother].d);
+                              patches[patchMother].population[mother].d, f);
+
     }
 
     /* Sinon, on cherche un père. */
     else
     {
         int father = getFather(patchMother, mother);
+
+        if(relationshipIsManaged) {f = patches[patchMother].relationship[std::min(father, mother)][std::max(father, mother)];}
         juveniles[whr].emplace_back((patches[patchMother].population[mother].s + patches[patchMother].population[father].s)/2,
-                              (patches[patchMother].population[mother].d + patches[patchMother].population[father].d)/2);
+                              (patches[patchMother].population[mother].d + patches[patchMother].population[father].d)/2, f);
     }
 }
 
@@ -221,7 +228,7 @@ void World::mutation(Individual& IndToMutate)
     /* Pour «retenir» quel trait doit muter
        false: d     true: s */
     bool sWasChosen = false;
-    double t = IndToMutate.d;
+    double trait = IndToMutate.d;
 
     std::uniform_real_distribution<double> unif(0, 1);
 
@@ -231,23 +238,23 @@ void World::mutation(Individual& IndToMutate)
         /* On choisit quel trait mute */
         if(unif(generator) >= 0.5)
         {
-            t = IndToMutate.s;
+            traitValue = IndToMutate.s;
             sWasChosen = true;
         }
 
         switch(typeMut)
         {
             case gaussian:
-                t = gaussMutation(t);
+                trait = gaussMutation(trait);
                 break;
 
             case uniform:
-                t = unifMutation(t);
+                trait = unifMutation(trait);
                 break;
         }
 
-        if (sWasChosen) {IndToMutate.s = t;}
-        else {IndToMutate.d = t;}
+        if (sWasChosen) {IndToMutate.s = trait;}
+        else {IndToMutate.d = trait;}
     }
 }
 
