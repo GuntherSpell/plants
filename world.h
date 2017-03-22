@@ -67,7 +67,8 @@ private:
     double delta; /**< @brief La dépression de consanguinité */
     double c; /**< @brief Le coût de dispersion */
 
-    bool relationshipIsManaged;
+    bool relationshipIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
+    int Ktot; /**< @brief La somme de la capacité d'accueil de tous les patchs. Utile uniquement si on gère l'apparentement */
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur mutation */
     double mu; /**< @brief La probabilité de mutation */
@@ -85,6 +86,32 @@ private:
      * Pour plus de détails, voir la méthode createNextGen
      */
     std::array<std::vector<Individual>,2> juveniles;
+
+    /**
+     * @brief
+     * Vecteur de vecteurs (demi-matrice) qui contient
+     * tous les apparentements entre tous les individus.
+     *
+     * La diagonale n'est pas remplie car, en cas d'autof, on
+     * utilisera le coefficient de consanguinité de la mère.
+     * On remplit la moitié supérieure de la matrice, c'est-à-dire
+     * que la première ligne est pleine et la dernière est vide.
+     */
+    std::array<std::vector<std::vector<double>>> relationship;
+
+    /**
+     * @brief
+     * vecteur qui contient tous les pères choisis pour pouvoir récréer
+     * la matrice d'apparentement. NB: en cas d'autof, père = mère.
+     */
+    std::vector<int> fathers;
+
+    /**
+     * @brief
+     * vecteur qui contient toutes les mères choisies pour pouvoir récréer
+     * la matrice d'apparentement.
+     */
+    std::vector<int> mothers;
 
     /**
      * @brief
@@ -126,6 +153,16 @@ private:
      * @param autof         si la graine est issue d'autof ou non
      */
     void newInd(int whr, int patchMother, int mother, bool autof);
+
+
+    /**
+     * @brief
+     * Méthode qui va renvoyer la position absolue d'un individu dans le monde
+     * (e.g. les indivdus du patch 0 sont les premiers).
+     *
+     * Cette méthode ne sert que quand on gère l'apparentemment.
+     */
+    int getAbsolutePos (int posInPatch, int idPatch);
 
     /**
      * @brief
@@ -171,6 +208,8 @@ private:
      * @return              L'identifiant du père
      */
     int getFather(int patchMother, int mother);
+
+    void calcNewRelationships(int whr);
 
     /**
      * @brief

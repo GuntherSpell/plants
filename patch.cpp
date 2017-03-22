@@ -5,7 +5,7 @@
 #include "patch.h"
 #include "individual.h"
 
-Patch::Patch(double p, int K, double sInit, double dInit, bool relationshipIsManaged)
+Patch::Patch(double p, int K, double sInit, double dInit)
 {
     int i = 0;
 
@@ -17,13 +17,6 @@ Patch::Patch(double p, int K, double sInit, double dInit, bool relationshipIsMan
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
     population.reserve(K);
-
-    if(relationshipIsManaged)
-    {
-        /* On part d'individus non apparentés.
-        NB: On ne gère pas la diagonale, c'est inutile. */
-        for(i=0; i<K - 1; i++) {relationship.emplace_back(K - 1 - i);}
-    }
 
     for(i=0; i<K; i++)
     {

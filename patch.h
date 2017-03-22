@@ -21,23 +21,20 @@ class Patch
 {
 public:
 
-    Patch(double p, int K, double sInit, double dInit, bool relationshipIsManaged);
+    Patch(double p, int K, double sInit, double dInit);
 
     int K; /**< @brief La capacité d'accueil du patch */
 
     /** @brief Un vecteur qui contient tous les individus du patch */
     std::vector<Individual> population;
 
-    std::vector<std::vector<double>> relationship;
-
     /**
      * @brief
-     * Vector qui contient les pressions en graines dispersantes.
+     * Vecteur qui contient les pressions en graines dispersantes.
      * Cela permet de ne pas devoir les calculer 2 fois quand
      * on est au patch à gauche puis à droite.
      */
     std::vector<double> dispSeeds;
-
 
     /**
      * @brief

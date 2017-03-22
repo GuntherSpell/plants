@@ -9,9 +9,8 @@
 
 /**
  * @brief
- * Contient les caractéristiques d'un individu,
- * la manière dont il se reproduit
- * et les modalités de la mutation
+ * Contient les caractéristiques d'un individu
+ * et la manière dont il se reproduit
  */
 
 class Individual
@@ -23,16 +22,15 @@ public:
     double s; /**< @brief Le taux d'autofécondation */
     double d; /**< @brief Le taux de dispersion */
 
-    double f; /**< @brief Le taux de consanguinité */
+    double f; /**< @brief Le taux de consanguinité, utilisé si on gère l'apparentement */
 
     /**
      * @brief
      * Méthode qui calcule les pressions en
      * propagule générées par cet individu.
      *
-     * Cette méthode ne génère que les pressions
-     * dispersantes ou résidentes, selon
-     * les besoins du modèle.
+     * Cette méthode ne génère que les pressions dispersantes
+     * ou résidentes, selon les besoins du modèle.
      *
      * @param delta         La dépression de consanguinité
      * @param c             Le coût de la dispersion

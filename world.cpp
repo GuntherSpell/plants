@@ -22,6 +22,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->c = c;
 
     this->relationshipIsManaged = relationshipIsManaged;
+    Ktot = 0;
 
     this->typeMut = (distrMut)typeMut;
     this->mu = mu;
@@ -41,7 +42,25 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
 
     for(i=0; i<NPatch; i++)
     {
-        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit, relationshipIsManaged);
+        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
+    }
+
+    if(relationshipIsManaged)
+    {
+        /* Il faut déjà savoir le nombre total d'individus. */
+        for(i=0; i<NPatch; i++) {Ktot += patches[i].K;}
+
+        relationship[0].reserve(Ktot - 1);
+        relationship[1].reserve(Ktot - 1);
+        fathers.reserve(Ktot);
+        mothers.reserve(Ktot);
+
+        /* On part d'individus non apparentés. */
+        for(i=0; i<Ktot; i++)
+        {
+            relationship[0].emplace_back(Ktot - i);
+            relationship[1].emplace_back(Ktot - i);
+        }
     }
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -206,7 +225,13 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     /* Issue d'autof */
     if(autof)
     {
-        if(relationshipIsManaged) {f = 1/2 + patches[patchMother].population[mother].f/2;}
+        if(relationshipIsManaged)
+        {
+            f = 1/2 + patches[patchMother].population[mother].f/2;
+            mothers.push_back(getAbsolutePos(mother, patchMother));
+            fathers.push_back(mothers.back());
+        }
+
         juveniles[whr].emplace_back(patches[patchMother].population[mother].s,
                               patches[patchMother].population[mother].d, f);
 
@@ -217,10 +242,29 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
     {
         int father = getFather(patchMother, mother);
 
-        if(relationshipIsManaged) {f = patches[patchMother].relationship[std::min(father, mother)][std::max(father, mother)];}
+        if(relationshipIsManaged)
+        {
+            f = relationship[std::min(father, mother)][std::max(father, mother)];
+            mothers.push_back(getAbsolutePos(mother, patchMother));
+            fathers.push_back(getAbsolutePos(father, patchMother));
+        }
+
         juveniles[whr].emplace_back((patches[patchMother].population[mother].s + patches[patchMother].population[father].s)/2,
                               (patches[patchMother].population[mother].d + patches[patchMother].population[father].d)/2, f);
     }
+}
+
+int World::getAbsolutePos (int posInPatch, int idPatch)
+{
+    int i = 0;
+    int absolutePos = posInPatch;
+
+    for(i=0; i<idPatch; i++)
+    {
+        absolutePos += patches[i].K;
+    }
+
+    return absolutePos;
 }
 
 void World::mutation(Individual& IndToMutate)
@@ -289,6 +333,20 @@ int World::getFather(int patchMother, int mother)
     while (father == mother); //Pas de pseudo allofécondation
 
     return father;
+}
+
+void World::calcNewRelationships(int gen)
+{
+    int i = 0, j = 0;
+
+    for(i=Ktot - 1; i>0; i--)
+    {
+        for(j=i; j<Ktot - 1; j++)
+        {
+            relationship[(gen+1)%2][i][j] = (relationship[gen%2][mothers[i]][mothers[j]] + relationship[gen%2][fathers[i]][fathers[j]]
+                                            + relationship[gen%2][fathers[i]][mothers[j]] +relationship[gen%2][mothers[i]][fathers[j]])/4
+        }
+    }
 }
 
 void World::clear_and_freeVector(std::vector<double>& toClear)
