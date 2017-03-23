@@ -12,9 +12,8 @@
 
 /**
  * @brief
- * Contient les caractéristiques d'un patch
- * et les méthodes nécessaires au fonctionnement
- * du modèle.
+ * Contient les caractéristiques d'un patch et les
+ * méthodes nécessaires au fonctionnement du modèle.
  */
 
 class Patch

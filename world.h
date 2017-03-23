@@ -47,8 +47,8 @@ public:
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ, int Kmin, int Kmax, int sigmaK,
-          double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
+    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ,
+          int Kmin, int Kmax, int sigmaK,double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
     /**
      * @brief
@@ -70,13 +70,13 @@ private:
     bool relationshipIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
     int Ktot; /**< @brief La somme de la capacité d'accueil de tous les patchs. Utile uniquement si on gère l'apparentement */
 
-    distrMut typeMut; /**< @brief La distribution de l'ampleur mutation */
+    distrMut typeMut; /**< @brief La distribution de l'ampleur de mutation */
     double mu; /**< @brief La probabilité de mutation */
     double sigmaZ; /**< @brief L'ampleur de la mutation */
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
-    int genCount; /**< @brief Compteur de générations. */
+    int genCount; /**< @brief Compteur de générations */
 
     std::mt19937_64 generator; /**< @brief Générateur de nombre aléatoire */
 
@@ -95,10 +95,6 @@ private:
      *
      * Pour les générations paires, les parents sont dans la case 0.
      * Pour les générations impaires, c'est l'inverse.
-     * La diagonale n'est pas remplie car, en cas d'autof, on
-     * utilisera le coefficient de consanguinité de la mère.
-     * On remplit la moitié supérieure de la matrice, c'est-à-dire
-     * que la première ligne est pleine et la dernière est vide.
      */
     std::array<std::vector<std::vector<double>>, 2> relationship;
 
@@ -116,6 +112,8 @@ private:
      */
     std::vector<int> mothers;
 
+    std::ofstream report; /**< @brief Variable permettant d'écrire le rapport */
+
     /**
      * @brief
      * Méthode qui permet de retourner une valeur pour un patch selon sa position.
@@ -125,7 +123,7 @@ private:
      * @param sigma     Degré de variation
      * @param i         La position du patch
      *
-     * @return          La valeur pour le patch donné.
+     * @return          La valeur pour le patch donné
      */
      double distr(double minVal, double maxVal, double sigma, int posPatch);
 
@@ -167,6 +165,8 @@ private:
      *
      * @param posInPatch    La position relative de l'individu dans le patch.
      * @param idPatch       L'identifiant du patch de l'individu.
+     *
+     * @return              La position absolue de l'individu
      */
     int getAbsolutePos (int posInPatch, int idPatch);
 
@@ -178,6 +178,10 @@ private:
      * Cette méthode ne sert que quand on gère l'apparentemment.
      *
      * @param AbsolutePos   La position absolue de l'individu
+     *
+     * @return              Un array dont la première case est la position
+     *                      relative de l'individu et dont la seconde
+     *                      case est le patch de l'individu.
      */
     std::array<int, 2> getRelativePos (int absolutePos);
 
@@ -226,6 +230,7 @@ private:
      */
     int getFather(int patchMother, int mother);
 
+    /** @brief Méthode qui va recalculer les apparentements entre tous les individus. */
     void calcNewRelationships(void);
 
     /**
@@ -235,8 +240,6 @@ private:
      * @param progress  état de la progression
      */
      void printProgress(int progress);
-
-    std::ofstream report; /**< @brief Variable permettant d'écrire le rapport */
 
     /**
      * @brief
@@ -251,17 +254,14 @@ private:
      */
     void writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP);
 
-    /**
-     * @brief
-     * Méthode qui écrit un rapport pour un génération donnée
-     *
-     * @param gen   la génération pour laquelle il faut écrire le rapport
-     */
+    /** @brief Méthode qui écrit un rapport pour un génération donnée */
     void writeReport(void);
 
     /**
      * @brief
      * Méthode qui permet de vider un vecteur et de libérer entièrement la mémoire
+     *
+     * @param toClear   le vecteur à vider, qui doit contenir des doubles
      */
     void clear_and_freeVector(std::vector<double>& toClear);
 };
