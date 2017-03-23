@@ -29,6 +29,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->sigmaZ = sigmaZ;
 
     this->NGen = NGen;
+    genCount = 0;
 
     report.open ("report_" + std::to_string(idWorld) + ".txt");
     this->genReport = genReport;
@@ -58,8 +59,8 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
         /* On part d'individus non apparentés. */
         for(i=0; i<Ktot; i++)
         {
-            relationship[0].emplace_back(Ktot - i);
-            relationship[1].emplace_back(Ktot - i);
+            relationship[0].emplace_back(i + 1);
+            relationship[1].emplace_back(i + 1);
         }
     }
 
@@ -76,23 +77,25 @@ double World::distr(double minVal, double maxVal, double sigma, int posPatch)
 
 void World::run(int idWorld)
 {
-    int i = 0, j = 0, progress = 0;
+    int i = 0, progress = 0;
 
     std::cout << "Progression du monde " << idWorld << " :" << std::endl;
     printProgress(0);
 
-    for(i=0; i<=NGen; i++)
+    for(genCount=0; genCount<=NGen; genCount++)
     {
-        if(i%genReport == 0) {writeReport(i);}
+        if(genCount%genReport == 0) {writeReport();}
 
-        for(j=0; j<NPatch; j++) {createNextGen(j);}
+        for(i=0; i<NPatch; i++) {createNextGen(i);}
 
-        for(j=0; j<NPatch; j++) {patches[j].isPollenized();}
+        if(relationshipIsManaged) {calcNewRelationships();}
+
+        for(i=0; i<NPatch; i++) {patches[i].isPollenized();}
 
         /* Indique la progression à l'écran */
-        if (i*78/NGen > progress)
+        if (genCount*78/NGen > progress)
         {
-            progress = i*78/NGen;
+            progress = genCount*78/NGen;
             printProgress(progress);
         }
     }
@@ -244,9 +247,11 @@ void World::newInd(int whr, int patchMother, int mother, bool autof)
 
         if(relationshipIsManaged)
         {
-            f = relationship[std::min(father, mother)][std::max(father, mother)];
+            /* Pour trouver l'apparentement dans la matrice, on a besoin des positions absolues. */
             mothers.push_back(getAbsolutePos(mother, patchMother));
             fathers.push_back(getAbsolutePos(father, patchMother));
+            f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
+
         }
 
         juveniles[whr].emplace_back((patches[patchMother].population[mother].s + patches[patchMother].population[father].s)/2,
@@ -267,6 +272,39 @@ int World::getAbsolutePos (int posInPatch, int idPatch)
     return absolutePos;
 }
 
+std::array<int, 2> World::getRelativePos (int absolutePos)
+{
+    int patchInd = 0;
+    int relativePos = 0;
+    int sumOfK = 0;
+
+    /* Pour optimiser, on part de la droite ou de la gauche. */
+    if(Ktot/2 <= absolutePos)
+    {
+        while(sumOfK < absolutePos)
+        {
+            sumOfK += patches[patchInd].K;
+            patchInd++;
+        }
+        patchInd = patchInd - 1; //On remet patchInd au bon endroit.
+
+        relativePos = absolutePos - (sumOfK - patches[patchInd].K);
+    }
+
+    else
+    {
+        while(sumOfK < absolutePos)
+        {
+            sumOfK += patches[NPatch - 1 - patchInd].K;
+            patchInd++;
+        }
+
+        relativePos = absolutePos - (Ktot - sumOfK);
+    }
+
+    return std::array<int, 2> {relativePos, patchInd};
+}
+
 void World::mutation(Individual& IndToMutate)
 {
     /* Pour «retenir» quel trait doit muter
@@ -282,7 +320,7 @@ void World::mutation(Individual& IndToMutate)
         /* On choisit quel trait mute */
         if(unif(generator) >= 0.5)
         {
-            traitValue = IndToMutate.s;
+            trait = IndToMutate.s;
             sWasChosen = true;
         }
 
@@ -335,18 +373,33 @@ int World::getFather(int patchMother, int mother)
     return father;
 }
 
-void World::calcNewRelationships(int gen)
+void World::calcNewRelationships(void)
 {
     int i = 0, j = 0;
 
-    for(i=Ktot - 1; i>0; i--)
+    /* Array qui contient la position relative de l'individu.
+    Case 0: la position dans le patch
+    Case 1: le patch */
+    std::array<int, 2> relativePos = {0,0};
+
+    for(i=0; i<Ktot; i++)
     {
-        for(j=i; j<Ktot - 1; j++)
+        for(j=0; j<=i; j++)
         {
-            relationship[(gen+1)%2][i][j] = (relationship[gen%2][mothers[i]][mothers[j]] + relationship[gen%2][fathers[i]][fathers[j]]
-                                            + relationship[gen%2][fathers[i]][mothers[j]] +relationship[gen%2][mothers[i]][fathers[j]])/4
+            if (i == j)
+            {
+                /* Si i == j, on a besoin du taux de consanguinité de l'individu */
+                relativePos = getRelativePos(i);
+                relationship[(genCount+1)%2][i][j] = 1/2 + patches[relativePos[1]].population[relativePos[0]].f/2;
+            }
+            relationship[(genCount+1)%2][i][j] = (relationship[genCount%2][mothers[i]][mothers[j]] + relationship[genCount%2][fathers[i]][fathers[j]]
+                                            + relationship[genCount%2][fathers[i]][mothers[j]] +relationship[genCount%2][mothers[i]][fathers[j]])/4;
         }
     }
+
+    /*On vide les vecteurs. */
+    fathers.clear();
+    mothers.clear();
 }
 
 void World::clear_and_freeVector(std::vector<double>& toClear)
@@ -377,7 +430,7 @@ void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 }
 
-void World::writeReport(int gen)
+void World::writeReport(void)
 {
     int i = 0, j = 0;
 
@@ -386,7 +439,7 @@ void World::writeReport(int gen)
     {
         for(i=0; i<patches[j].K; i++)
         {
-            report << gen << '\t';
+            report << genCount << '\t';
             report << j << '\t';
             report << i << '\t';
             report << patches[j].population[i].s << '\t';
@@ -395,6 +448,6 @@ void World::writeReport(int gen)
     }
 
 
-    if (NGen - gen < genReport) {report.close();}
+    if (NGen - genCount < genReport) {report.close();}
 }
 

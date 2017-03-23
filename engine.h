@@ -9,7 +9,7 @@
 
 /**
  * @brief
- * Méthode que prend les paramètres du fichier texte config.txt
+ * Fonction qui prend les paramètres du fichier texte config.txt
  *
  * Pour plus d'informations, regarder le fichier config.txt
  *
@@ -19,7 +19,7 @@
  */
 void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats);
 
-/** @brief Méthode qui lance la simulation pour tous les mondes */
+/** @brief Fonction qui lance la simulation pour tous les mondes */
 void runSimu(void);
 
 #endif // ENGINE_H_INCLUDED

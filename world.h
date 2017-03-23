@@ -76,6 +76,7 @@ private:
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
+    int genCount; /**< @brief Compteur de générations. */
 
     std::mt19937_64 generator; /**< @brief Générateur de nombre aléatoire */
 
@@ -92,12 +93,14 @@ private:
      * Vecteur de vecteurs (demi-matrice) qui contient
      * tous les apparentements entre tous les individus.
      *
+     * Pour les générations paires, les parents sont dans la case 0.
+     * Pour les générations impaires, c'est l'inverse.
      * La diagonale n'est pas remplie car, en cas d'autof, on
      * utilisera le coefficient de consanguinité de la mère.
      * On remplit la moitié supérieure de la matrice, c'est-à-dire
      * que la première ligne est pleine et la dernière est vide.
      */
-    std::array<std::vector<std::vector<double>>> relationship;
+    std::array<std::vector<std::vector<double>>, 2> relationship;
 
     /**
      * @brief
@@ -161,8 +164,22 @@ private:
      * (e.g. les indivdus du patch 0 sont les premiers).
      *
      * Cette méthode ne sert que quand on gère l'apparentemment.
+     *
+     * @param posInPatch    La position relative de l'individu dans le patch.
+     * @param idPatch       L'identifiant du patch de l'individu.
      */
     int getAbsolutePos (int posInPatch, int idPatch);
+
+    /**
+     * @brief
+     * Méthode qui va renvoyer la position relative d'un individu
+     * dans son patch à partir de sa position absolue.
+     *
+     * Cette méthode ne sert que quand on gère l'apparentemment.
+     *
+     * @param AbsolutePos   La position absolue de l'individu
+     */
+    std::array<int, 2> getRelativePos (int absolutePos);
 
     /**
      * @brief
@@ -209,7 +226,7 @@ private:
      */
     int getFather(int patchMother, int mother);
 
-    void calcNewRelationships(int whr);
+    void calcNewRelationships(void);
 
     /**
      * @brief
@@ -240,7 +257,7 @@ private:
      *
      * @param gen   la génération pour laquelle il faut écrire le rapport
      */
-    void writeReport(int gen);
+    void writeReport(void);
 
     /**
      * @brief
