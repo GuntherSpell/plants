@@ -51,14 +51,15 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
         /* Il faut déjà savoir le nombre total d'individus. */
         for(i=0; i<NPatch; i++) {Ktot += patches[i].K;}
 
-        relationship[0].reserve(Ktot - 1);
-        relationship[1].reserve(Ktot - 1);
+        relationship[0].reserve(Ktot);
+        relationship[1].reserve(Ktot);
         fathers.reserve(Ktot);
         mothers.reserve(Ktot);
 
         /* On part d'individus non apparentés. */
         for(i=0; i<Ktot; i++)
         {
+            /* Pour chacune des deux matrices, on construit Ktot lignes remplies de i+1 zéros. */
             relationship[0].emplace_back(i + 1);
             relationship[1].emplace_back(i + 1);
         }
@@ -72,7 +73,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
 
 double World::distr(double minVal, double maxVal, double sigma, int posPatch)
 {
-    return (minVal + ((maxVal - minVal) * exp( - ((posPatch-(NPatch/2))*(posPatch-(NPatch/2))) / (2*sigma))));
+    return (minVal + ((maxVal - minVal) * exp( - ((posPatch-(NPatch/2))*(posPatch-(NPatch/2))) / (2*sigma*sigma))));
 }
 
 void World::run(int idWorld)
@@ -109,20 +110,19 @@ void World::createNextGen (int idPatch)
     en avance la mémoire pour améliorer les performances. */
     int memoryToReserve = 2*patches[idPatch].K;
 
-    /* Vecteur qui contient tous les mères possibles.
+    /* Vecteur qui contient toutes les mères possibles (allof et autof)
        Elles sont numérotées de 0 à n.
        Les numéros impairs sont issus d'allof.
        Les numéros pairs sont issus d'autof.*/
     std::vector<int> mother;
 
-    /* Vecteur qui contient toutes les pressions
-       pour un patch (dispersantes des voisins
-       et résidentes du patch local).
-       Les valeurs paires sont issues d'autof.
-       Les valeurs impaires sont issues d'allof. */
+    /* Vecteur qui contient toutes les pressions pour un patch
+    (dispersantes des voisins et résidentes du patch local).
+    Les valeurs paires sont issues d'autof.
+    Les valeurs impaires sont issues d'allof. */
     std::vector<double> press;
 
-    /* Vecteur qui permet de savoir d'où vient la mère retenue */
+    /* Vecteur qui permet de savoir d'où vient la mère retenue. */
     std::vector<int> fromPatch;
 
     /* Selon la position du patch, il faut réserver plus ou moins de mémoire. */
@@ -174,9 +174,14 @@ void World::createNextGen (int idPatch)
         int chosenMother = weighted(generator);
         int patchMother = fromPatch[chosenMother];
 
+        /* Les mères paires font de l'autof. */
         bool autof = false;
         if (chosenMother%2 == 0) {autof = true;}
 
+        /* Les lignes suivantes permettent de retrouver la valeur
+        de la position relavive de la mère dans son patch. */
+
+        ///////////////////////////////////////////////////////////
         if (idPatch == 0)
         {
             if (patchMother == idPatch + 1)
@@ -197,8 +202,8 @@ void World::createNextGen (int idPatch)
                 chosenMother = chosenMother - 2*patches[idPatch - 1].K - 2*patches[idPatch].K;
             }
         }
-
         chosenMother = chosenMother/2;
+        ////////////////////////////////////////////////////////////
 
         /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
         Pour les patchs impairs, dans le 2nd. */
