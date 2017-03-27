@@ -20,12 +20,15 @@ class Patch
 {
 public:
 
-    Patch(double p, int K, double sInit, double dInit);
+    Patch(double p, int K, double sInit, double dInit, int pos_of_first_ind);
 
     int K; /**< @brief La capacité d'accueil du patch */
 
     /** @brief Un vecteur qui contient tous les individus du patch */
     std::vector<Individual> population;
+
+    /** @brief La position absolue (dans le monde entier) du premier individu du patch */
+    int pos_of_first_ind;
 
     /**
      * @brief

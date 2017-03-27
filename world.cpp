@@ -6,15 +6,17 @@
 #include <array>
 #include <fstream>
 #include <chrono>
+#include <algorithm>
 
 #include "world.h"
 #include "patch.h"
 #include "individual.h"
 
-World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ,
-             int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
+World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
+             int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
+             double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
 {
-    int i = 0;
+    int i = 0, j = 0;
 
     this->NPatch = NPatch;
 
@@ -22,11 +24,11 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->c = c;
 
     this->relationshipIsManaged = relationshipIsManaged;
-    Ktot = 0;
 
     this->typeMut = (distrMut)typeMut;
     this->mu = mu;
     this->sigmaZ = sigmaZ;
+    this->d_s_relativeMutation = d_s_relativeMutation;
 
     this->NGen = NGen;
     genCount = 0;
@@ -41,16 +43,25 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     juveniles[0].reserve(Kmax);
     juveniles[1].reserve(Kmax);
 
+    int Ktot = 0;
+
     for(i=0; i<NPatch; i++)
     {
-        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit);
+        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit, Ktot);
+        Ktot += patches[i].K;
+
+        for(j=0; j<patches[i].K; j++)
+        {
+            IndividualPosition InfoToAdd;   //
+            InfoToAdd.patch = i;            // On ne peut pas ajouter l'info dans le vecteur sans la construire avant.
+            InfoToAdd.posInPatch = j;       //
+
+            globalPop.push_back(InfoToAdd);
+        }
     }
 
     if(relationshipIsManaged)
     {
-        /* Il faut déjà savoir le nombre total d'individus. */
-        for(i=0; i<NPatch; i++) {Ktot += patches[i].K;}
-
         relationship[0].reserve(Ktot);
         relationship[1].reserve(Ktot);
         fathers.reserve(Ktot);
@@ -116,14 +127,14 @@ void World::createNextGen (int idPatch)
        Les numéros pairs sont issus d'autof.*/
     std::vector<int> mother;
 
+    /* Perment de savoir où commencer le tirage aléatoire des mères. */
+    int firstMother = patches[idPatch].pos_of_first_ind;
+
     /* Vecteur qui contient toutes les pressions pour un patch
     (dispersantes des voisins et résidentes du patch local).
     Les valeurs paires sont issues d'autof.
     Les valeurs impaires sont issues d'allof. */
     std::vector<double> press;
-
-    /* Vecteur qui permet de savoir d'où vient la mère retenue. */
-    std::vector<int> fromPatch;
 
     /* Selon la position du patch, il faut réserver plus ou moins de mémoire. */
     if(idPatch == 0) {memoryToReserve += 2*patches[idPatch + 1].K;}
@@ -138,7 +149,6 @@ void World::createNextGen (int idPatch)
     qui peuvent diminuer les performances. */
     mother.reserve(memoryToReserve + 1);
     press.reserve(memoryToReserve);
-    fromPatch.reserve(memoryToReserve);
 
     if (idPatch != 0)
     {
@@ -147,21 +157,18 @@ void World::createNextGen (int idPatch)
         /* On peut vider le vecteur car il n'est plus utile. */
         clear_and_freeVector(patches[idPatch - 1].dispSeeds);
 
-        fromPatch.insert(fromPatch.end(), 2*patches[idPatch - 1].K, idPatch - 1);
+        /* Puisqu'on n'est pas tout à gauche, la première mère devient le premier individu du patch de gauche. */
+        firstMother = patches[idPatch - 1].pos_of_first_ind;
     }
 
     patches[idPatch].getPression(delta, c, false, press);
 
-    fromPatch.insert(fromPatch.end(), 2*patches[idPatch].K, idPatch);
-
     if (idPatch != NPatch - 1)
     {
         patches[idPatch + 1].getPression(delta, c, true, press);
-
-        fromPatch.insert(fromPatch.end(), 2*patches[idPatch + 1].K, idPatch + 1);
     }
 
-    for (i=0; i<(int)press.size() + 1; i++)
+    for (i=firstMother; i<(int)press.size() + 1; i++)
     {
         mother.push_back(i);
     }
@@ -172,42 +179,19 @@ void World::createNextGen (int idPatch)
     for(i=0; i<patches[idPatch].K; i++)
     {
         int chosenMother = weighted(generator);
-        int patchMother = fromPatch[chosenMother];
 
         /* Les mères paires font de l'autof. */
         bool autof = false;
-        if (chosenMother%2 == 0) {autof = true;}
-
-        /* Les lignes suivantes permettent de retrouver la valeur
-        de la position relavive de la mère dans son patch. */
-
-        ///////////////////////////////////////////////////////////
-        if (idPatch == 0)
+        if (chosenMother%2 == 0)
         {
-            if (patchMother == idPatch + 1)
-            {
-                chosenMother = chosenMother - 2*patches[idPatch].K;
-            }
+            autof = true;
         }
 
-        else
-        {
-            if (patchMother == idPatch)
-            {
-                chosenMother = chosenMother - 2*patches[idPatch - 1].K;
-            }
-
-            if (patchMother == idPatch + 1)
-            {
-                chosenMother = chosenMother - 2*patches[idPatch - 1].K - 2*patches[idPatch].K;
-            }
-        }
         chosenMother = chosenMother/2;
-        ////////////////////////////////////////////////////////////
 
         /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
         Pour les patchs impairs, dans le 2nd. */
-        newInd(idPatch%2, patchMother, chosenMother, autof);
+        newInd(idPatch%2, chosenMother, autof);
         mutation(juveniles[idPatch%2][i]);
     }
 
@@ -226,88 +210,43 @@ void World::createNextGen (int idPatch)
     }
 }
 
-void World::newInd(int whr, int patchMother, int mother, bool autof)
+void World::newInd(int whr, int mother, bool autof)
 {
     double f = 0;
+    int patchMother = globalPop[mother].patch;
+    int mother_PosInPatch = globalPop[mother].posInPatch;
 
     /* Issue d'autof */
     if(autof)
     {
         if(relationshipIsManaged)
         {
-            f = 1/2 + patches[patchMother].population[mother].f/2;
-            mothers.push_back(getAbsolutePos(mother, patchMother));
-            fathers.push_back(mothers.back());
+            f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
+            mothers.push_back(mother);
+            fathers.push_back(mother);
         }
 
-        juveniles[whr].emplace_back(patches[patchMother].population[mother].s,
-                              patches[patchMother].population[mother].d, f);
+        juveniles[whr].emplace_back(patches[patchMother].population[mother_PosInPatch].s,
+                              patches[patchMother].population[mother_PosInPatch].d, f);
 
     }
 
     /* Sinon, on cherche un père. */
     else
     {
-        int father = getFather(patchMother, mother);
+        int father = getFather(patchMother, mother_PosInPatch);
 
         if(relationshipIsManaged)
         {
-            /* Pour trouver l'apparentement dans la matrice, on a besoin des positions absolues. */
-            mothers.push_back(getAbsolutePos(mother, patchMother));
-            fathers.push_back(getAbsolutePos(father, patchMother));
+            mothers.push_back(mother);
+            fathers.push_back(patches[patchMother].pos_of_first_ind + father);
             f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
 
         }
 
-        juveniles[whr].emplace_back((patches[patchMother].population[mother].s + patches[patchMother].population[father].s)/2,
-                              (patches[patchMother].population[mother].d + patches[patchMother].population[father].d)/2, f);
+        juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s + patches[patchMother].population[father].s)/2,
+                              (patches[patchMother].population[mother_PosInPatch].d + patches[patchMother].population[father].d)/2, f);
     }
-}
-
-int World::getAbsolutePos (int posInPatch, int idPatch)
-{
-    int i = 0;
-    int absolutePos = posInPatch;
-
-    for(i=0; i<idPatch; i++)
-    {
-        absolutePos += patches[i].K;
-    }
-
-    return absolutePos;
-}
-
-std::array<int, 2> World::getRelativePos (int absolutePos)
-{
-    int patchInd = 0;
-    int relativePos = 0;
-    int sumOfK = 0;
-
-    /* Pour optimiser, on part de la droite ou de la gauche. */
-    if(Ktot/2 <= absolutePos)
-    {
-        while(sumOfK < absolutePos)
-        {
-            sumOfK += patches[patchInd].K;
-            patchInd++;
-        }
-        patchInd = patchInd - 1; //On remet patchInd au bon endroit.
-
-        relativePos = absolutePos - (sumOfK - patches[patchInd].K);
-    }
-
-    else
-    {
-        while(sumOfK < absolutePos)
-        {
-            sumOfK += patches[NPatch - 1 - patchInd].K;
-            patchInd++;
-        }
-
-        relativePos = absolutePos - (Ktot - sumOfK);
-    }
-
-    return std::array<int, 2> {relativePos, patchInd};
 }
 
 void World::mutation(Individual& IndToMutate)
@@ -323,7 +262,7 @@ void World::mutation(Individual& IndToMutate)
     if(unif(generator) < mu)
     {
         /* On choisit quel trait mute */
-        if(unif(generator) >= 0.5)
+        if(unif(generator) >= d_s_relativeMutation)
         {
             trait = IndToMutate.s;
             sWasChosen = true;
@@ -382,20 +321,14 @@ void World::calcNewRelationships(void)
 {
     int i = 0, j = 0;
 
-    /* Array qui contient la position relative de l'individu.
-    Case 0: la position dans le patch
-    Case 1: le patch */
-    std::array<int, 2> relativePos = {0,0};
-
-    for(i=0; i<Ktot; i++)
+    for(i=0; i<(int)globalPop.size(); i++)
     {
         for(j=0; j<=i; j++)
         {
             if (i == j)
             {
-                /* Si i == j, on a besoin du taux de consanguinité de l'individu */
-                relativePos = getRelativePos(i);
-                relationship[(genCount+1)%2][i][j] = 1/2 + patches[relativePos[1]].population[relativePos[0]].f/2;
+                /* On a besoin du taux de consanguinité de l'individu. */
+                relationship[(genCount+1)%2][i][j] = 1/2 + patches[globalPop[i].patch].population[globalPop[i].posInPatch].f/2;
             }
             relationship[(genCount+1)%2][i][j] = (relationship[genCount%2][mothers[i]][mothers[j]] + relationship[genCount%2][fathers[i]][fathers[j]]
                                             + relationship[genCount%2][fathers[i]][mothers[j]] +relationship[genCount%2][mothers[i]][fathers[j]])/4;
@@ -428,8 +361,10 @@ void World::printProgress(int progress)
 void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
+    report << "Gestion de l'apparentement:" << relationshipIsManaged << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
-    report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ << std::endl;
+    report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ;
+    report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
     report << "Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
     report << "Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;

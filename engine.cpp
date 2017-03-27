@@ -17,7 +17,7 @@ void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats)
     config.ignore(256,' ');
     config >> NReplicats;
 
-    for (i=0; i<17*NWorld; i++)
+    for (i=0; i<18*NWorld; i++)
     {
         double val;
         config.ignore(256,' ');
@@ -40,7 +40,7 @@ void runSimu(void)
             World world(i*NReplicats + j, params[i], params[NWorld+i], params[2*NWorld+i], params[3*NWorld+i], params[4*NWorld+i],
             params[5*NWorld+i], params[6*NWorld+i], params[7*NWorld+i], params[8*NWorld+i],
             params[9*NWorld+i], params[10*NWorld+i], params[11*NWorld+i], params[12*NWorld+i],
-            params[13*NWorld+i], params[14*NWorld+i], params[15*NWorld+i], params[16*NWorld+i]);
+            params[13*NWorld+i], params[14*NWorld+i], params[15*NWorld+i], params[16*NWorld+i], params[17*NWorld+i]);
             world.run(i*NReplicats + j);
         }
     }

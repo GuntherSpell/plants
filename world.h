@@ -24,6 +24,12 @@ typedef enum _mut_
     uniform = 1,
 } distrMut;
 
+typedef struct _PositionOfIndividuals_
+{
+    int posInPatch;
+    int patch;
+} IndividualPosition;
+
 /**
  * @brief
  * Contient les caractéristiques d'un monde.
@@ -47,8 +53,9 @@ public:
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, int typeMut, double mu, double sigmaZ,
-          int Kmin, int Kmax, int sigmaK,double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
+    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
+          int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
+          double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
 
     /**
      * @brief
@@ -63,16 +70,18 @@ private:
     int NPatch; /**< @brief Nombre de patchs du monde */
 
     std::vector<Patch> patches; /**< @brief Vecteur qui contient tous les patchs du monde */
+    /** @brief Vecteur qui contient, pour chaque individu, le numéro de son patch et sa postion dans celui-ci. */
+    std::vector<IndividualPosition> globalPop;
 
     double delta; /**< @brief La dépression de consanguinité */
     double c; /**< @brief Le coût de dispersion */
 
     bool relationshipIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
-    int Ktot; /**< @brief La somme de la capacité d'accueil de tous les patchs. Utile uniquement si on gère l'apparentement */
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur de mutation */
     double mu; /**< @brief La probabilité de mutation */
     double sigmaZ; /**< @brief L'ampleur de la mutation */
+    double d_s_relativeMutation; /** @brief Mutation relative de d et s. Si égale à 1, seul d mute. */
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
@@ -149,41 +158,10 @@ private:
      * Méthode qui crée un nouvel individu selon la propagule choisie
      *
      * @param whr           indique dans quel vecteur temporaire il faut stocker la génération.
-     * @param patchMother   identifiant du patch de la mère
-     * @param mother        identifiant de la mère
+     * @param mother        identifiant globale de la mère
      * @param autof         si la graine est issue d'autof ou non
      */
-    void newInd(int whr, int patchMother, int mother, bool autof);
-
-
-    /**
-     * @brief
-     * Méthode qui va renvoyer la position absolue d'un individu dans le monde
-     * (e.g. les indivdus du patch 0 sont les premiers).
-     *
-     * Cette méthode ne sert que quand on gère l'apparentemment.
-     *
-     * @param posInPatch    La position relative de l'individu dans le patch.
-     * @param idPatch       L'identifiant du patch de l'individu.
-     *
-     * @return              La position absolue de l'individu
-     */
-    int getAbsolutePos (int posInPatch, int idPatch);
-
-    /**
-     * @brief
-     * Méthode qui va renvoyer la position relative d'un individu
-     * dans son patch à partir de sa position absolue.
-     *
-     * Cette méthode ne sert que quand on gère l'apparentemment.
-     *
-     * @param AbsolutePos   La position absolue de l'individu
-     *
-     * @return              Un array dont la première case est la position
-     *                      relative de l'individu et dont la seconde
-     *                      case est le patch de l'individu.
-     */
-    std::array<int, 2> getRelativePos (int absolutePos);
+    void newInd(int whr, int mother, bool autof);
 
     /**
      * @brief
