@@ -7,7 +7,7 @@
 
 void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats)
 {
-    int i;
+    int i = 0;
     std::ifstream config("config.txt");
 
     config.ignore(500,'>');

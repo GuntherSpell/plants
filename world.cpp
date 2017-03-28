@@ -49,7 +49,11 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     {
         patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit, Ktot);
         Ktot += patches[i].K;
+    }
 
+    globalPop.reserve(Ktot);
+    for(i=0; i<NPatch; i++)
+    {
         for(j=0; j<patches[i].K; j++)
         {
             IndividualPosition InfoToAdd;   //
@@ -164,7 +168,7 @@ void World::createNextGen (int idPatch)
         patches[idPatch + 1].getPression(delta, c, true, press);
     }
 
-    for (i=firstMother; i<firstMother + (int)press.size() + 1; i++)
+    for (i=firstMother; i<firstMother + int(press.size()) + 1; i++)
     {
         mother.push_back(i);
     }
