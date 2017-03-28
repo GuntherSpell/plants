@@ -27,7 +27,11 @@ public:
     /** @brief Un vecteur qui contient tous les individus du patch */
     std::vector<Individual> population;
 
-    /** @brief La position absolue (dans le monde entier) du premier individu du patch */
+    /**
+    * @brief La position absolue (dans le monde entier) du premier individu du patch.
+    *
+    * C'est une info utile pour retrouver la position absolue de n'importe quel individu du patch.
+    */
     int pos_of_first_ind;
 
     /**

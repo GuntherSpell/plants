@@ -121,14 +121,13 @@ void World::createNextGen (int idPatch)
     en avance la mémoire pour améliorer les performances. */
     int memoryToReserve = 2*patches[idPatch].K;
 
-    /* Vecteur qui contient toutes les mères possibles (allof et autof)
-       Elles sont numérotées de 0 à n.
-       Les numéros impairs sont issus d'allof.
-       Les numéros pairs sont issus d'autof.*/
-    std::vector<int> mother;
-
     /* Perment de savoir où commencer le tirage aléatoire des mères. */
     int firstMother = patches[idPatch].pos_of_first_ind;
+
+    /* Vecteur qui contient toutes les mères possibles (allof et autof).
+    Elles sont numérotées de firstMother à n.
+    La 1ère mère fait de l'autof, la 2nde allof, 3ème autof, etc. */
+    std::vector<int> mother;
 
     /* Vecteur qui contient toutes les pressions pour un patch
     (dispersantes des voisins et résidentes du patch local).
@@ -144,9 +143,6 @@ void World::createNextGen (int idPatch)
         else {memoryToReserve += 2*patches[idPatch - 1].K + 2*patches[idPatch + 1].K;}
     }
 
-    /* Les lignes suivantes permettent de réserver
-    de la mémoire pour éviter les réallocations
-    qui peuvent diminuer les performances. */
     mother.reserve(memoryToReserve + 1);
     press.reserve(memoryToReserve);
 
@@ -168,7 +164,7 @@ void World::createNextGen (int idPatch)
         patches[idPatch + 1].getPression(delta, c, true, press);
     }
 
-    for (i=firstMother; i<(int)press.size() + 1; i++)
+    for (i=firstMother; i<firstMother + (int)press.size() + 1; i++)
     {
         mother.push_back(i);
     }
@@ -176,18 +172,25 @@ void World::createNextGen (int idPatch)
     /* Objet qui permet de générer des nombres aléatoires pondérés. */
     std::piecewise_constant_distribution<double> weighted (mother.begin(), mother.end(), press.begin());
 
+    /* Il faut savoir si les mères paires font de l'autof ou de l'allof. Cela dépend de firstMother. */
+    bool firstMotherIsOdd = true;
+    if (firstMother%2 == 0)
+    {
+        firstMotherIsOdd = false;
+    }
+
     for(i=0; i<patches[idPatch].K; i++)
     {
         int chosenMother = weighted(generator);
 
-        /* Les mères paires font de l'autof. */
-        bool autof = false;
+
+        bool autof = firstMotherIsOdd;
         if (chosenMother%2 == 0)
         {
-            autof = true;
+            autof = !firstMotherIsOdd;
         }
 
-        chosenMother = chosenMother/2;
+        chosenMother = (firstMother + chosenMother)/2;
 
         /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
         Pour les patchs impairs, dans le 2nd. */
@@ -251,16 +254,16 @@ void World::newInd(int whr, int mother, bool autof)
 
 void World::mutation(Individual& IndToMutate)
 {
-    /* Pour «retenir» quel trait doit muter
-       false: d     true: s */
-    bool sWasChosen = false;
-    double trait = IndToMutate.d;
-
     std::uniform_real_distribution<double> unif(0, 1);
 
     /* Y a-t-il mutation ? */
     if(unif(generator) < mu)
     {
+        /* Pour «retenir» quel trait doit muter
+        false: d     true: s */
+        bool sWasChosen = false;
+        double trait = IndToMutate.d;
+
         /* On choisit quel trait mute */
         if(unif(generator) >= d_s_relativeMutation)
         {
@@ -289,7 +292,7 @@ double World::gaussMutation (double t)
     std::normal_distribution<double> gauss(0,sigmaZ);
     double deltaMu = gauss(generator);
 
-    return t*exp(deltaMu)/((exp(deltaMu) - 1)*t + 1);
+    return t*exp(deltaMu)/((expm1(deltaMu))*t + 1); //expm1(x) renvoie exp(x) - 1.
 }
 
 double World::unifMutation (double t)

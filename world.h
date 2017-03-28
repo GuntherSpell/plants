@@ -12,19 +12,16 @@
  * @file
  */
 
- /**
-  * @brief
-  * Énumération qui permet de choisir
-  * le type de distribution que l'on
-  * veut pour les mutations.
-  */
+ /** @brief Énumération qui permet de choisir le type de distribution que l'on veut pour les mutations. */
 typedef enum _mut_
 {
     gaussian = 0,
     uniform = 1,
 } distrMut;
 
-typedef struct _PositionOfIndividuals_
+
+/** @brief Structure qui permet de stocker la position relative (dans un patch) pour un individu. */
+typedef struct _IndividualPosition_
 {
     int posInPatch;
     int patch;
@@ -70,7 +67,15 @@ private:
     int NPatch; /**< @brief Nombre de patchs du monde */
 
     std::vector<Patch> patches; /**< @brief Vecteur qui contient tous les patchs du monde */
-    /** @brief Vecteur qui contient, pour chaque individu, le numéro de son patch et sa postion dans celui-ci. */
+
+    /**
+     * @brief Vecteur qui contient, pour chaque individu, le numéro de son patch et sa postion dans celui-ci.
+     *
+     * Ce vecteur permet de connaitre la position relative (dans un patch) d'un individu
+     * à partir de sa posititon absolue (dans le monde).
+     * Ce vecteur est très utile pour récupérer les infos de la mère après l'avoir tirée au sort.
+     * Il sert également pour gérer l'apparentement entre individus.
+     */
     std::vector<IndividualPosition> globalPop;
 
     double delta; /**< @brief La dépression de consanguinité */
