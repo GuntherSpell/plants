@@ -25,7 +25,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
 
     this->relationshipIsManaged = relationshipIsManaged;
 
-    this->typeMut = (distrMut)typeMut;
+    this->typeMut = distrMut(typeMut);
     this->mu = mu;
     this->sigmaZ = sigmaZ;
     this->d_s_relativeMutation = d_s_relativeMutation;
@@ -140,11 +140,13 @@ void World::createNextGen (int idPatch)
     std::vector<double> press;
 
     /* Selon la position du patch, il faut réserver plus ou moins de mémoire. */
-    if(idPatch == 0) {memoryToReserve += 2*patches[idPatch + 1].K;}
-    else
+    if(idPatch != 0)
     {
-        if(idPatch == NPatch - 1) {memoryToReserve += 2*patches[idPatch - 1].K;}
-        else {memoryToReserve += 2*patches[idPatch - 1].K + 2*patches[idPatch + 1].K;}
+        memoryToReserve += 2*patches[idPatch - 1].K;
+    }
+    if(idPatch != NPatch - 1)
+    {
+        memoryToReserve += 2*patches[idPatch + 1].K;
     }
 
     mother.reserve(memoryToReserve + 1);
@@ -177,21 +179,16 @@ void World::createNextGen (int idPatch)
     std::piecewise_constant_distribution<double> weighted (mother.begin(), mother.end(), press.begin());
 
     /* Il faut savoir si les mères paires font de l'autof ou de l'allof. Cela dépend de firstMother. */
-    bool firstMotherIsOdd = true;
-    if (firstMother%2 == 0)
-    {
-        firstMotherIsOdd = false;
-    }
 
     for(i=0; i<patches[idPatch].K; i++)
     {
         int chosenMother = weighted(generator);
 
-
-        bool autof = firstMotherIsOdd;
-        if (chosenMother%2 == 0)
+        /* Une mère fait de l'autof si elle a la même parité que la première mère. */
+        bool autof = false;
+        if (chosenMother%2 == firstMother%2)
         {
-            autof = !firstMotherIsOdd;
+            autof = true;
         }
 
         chosenMother = (firstMother + chosenMother)/2;
@@ -220,6 +217,8 @@ void World::createNextGen (int idPatch)
 void World::newInd(int whr, int mother, bool autof)
 {
     double f = 0;
+
+    /* On récupère la position relative de la mère dans son patch. */
     int patchMother = globalPop[mother].patch;
     int mother_PosInPatch = globalPop[mother].posInPatch;
 
@@ -234,7 +233,7 @@ void World::newInd(int whr, int mother, bool autof)
         }
 
         juveniles[whr].emplace_back(patches[patchMother].population[mother_PosInPatch].s,
-                              patches[patchMother].population[mother_PosInPatch].d, f);
+                                    patches[patchMother].population[mother_PosInPatch].d, f);
 
     }
 
@@ -251,8 +250,10 @@ void World::newInd(int whr, int mother, bool autof)
 
         }
 
-        juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s + patches[patchMother].population[father].s)/2,
-                              (patches[patchMother].population[mother_PosInPatch].d + patches[patchMother].population[father].d)/2, f);
+        juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s +
+                                     patches[patchMother].population[father].s)/2,
+                                    (patches[patchMother].population[mother_PosInPatch].d +
+                                     patches[patchMother].population[father].d)/2, f);
     }
 }
 
@@ -291,15 +292,15 @@ void World::mutation(Individual& IndToMutate)
     }
 }
 
-double World::gaussMutation (double t)
+double World::gaussMutation(double t)
 {
     std::normal_distribution<double> gauss(0,sigmaZ);
     double deltaMu = gauss(generator);
 
-    return t*exp(deltaMu)/((expm1(deltaMu))*t + 1); //expm1(x) renvoie exp(x) - 1.
+    return t*exp(deltaMu)/(expm1(deltaMu)*t + 1); //expm1(x) renvoie exp(x) - 1.
 }
 
-double World::unifMutation (double t)
+double World::unifMutation(double t)
 {
     double lowerBound = t - sigmaZ;
     double upperBound = t + sigmaZ;
@@ -328,7 +329,7 @@ void World::calcNewRelationships(void)
 {
     int i = 0, j = 0;
 
-    for(i=0; i<(int)globalPop.size(); i++)
+    for(i=0; i<int(globalPop.size()); i++)
     {
         for(j=0; j<=i; j++)
         {
@@ -337,8 +338,11 @@ void World::calcNewRelationships(void)
                 /* On a besoin du taux de consanguinité de l'individu. */
                 relationship[(genCount+1)%2][i][j] = 1/2 + patches[globalPop[i].patch].population[globalPop[i].posInPatch].f/2;
             }
-            relationship[(genCount+1)%2][i][j] = (relationship[genCount%2][mothers[i]][mothers[j]] + relationship[genCount%2][fathers[i]][fathers[j]]
-                                            + relationship[genCount%2][fathers[i]][mothers[j]] +relationship[genCount%2][mothers[i]][fathers[j]])/4;
+
+            relationship[(genCount+1)%2][i][j] = (relationship[genCount%2][mothers[i]][mothers[j]] +
+                                                  relationship[genCount%2][fathers[i]][fathers[j]] +
+                                                  relationship[genCount%2][fathers[i]][mothers[j]] +
+                                                  relationship[genCount%2][mothers[i]][fathers[j]])/4;
         }
     }
 

@@ -185,7 +185,7 @@ private:
       *
       * @return         La valeur du trait après mutation.
       */
-    double unifMutation (double t);
+    double unifMutation(double t);
 
     /**
       * @brief
@@ -195,7 +195,7 @@ private:
       *
       * @return         La valeur du trait après mutation.
       */
-    double gaussMutation (double t);
+    double gaussMutation(double t);
 
     /**
      * @brief
