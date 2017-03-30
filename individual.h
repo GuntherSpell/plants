@@ -26,19 +26,25 @@ public:
 
     /**
      * @brief
-     * Méthode qui calcule les pressions en
-     * propagule générées par cet individu.
-     *
-     * Cette méthode ne génère que les pressions dispersantes
-     * ou résidentes, selon les besoins du modèle.
+     * Méthode qui calcule les pressions en propagules dipersantes générées par cet individu.
      *
      * @param delta         La dépression de consanguinité
      * @param c             Le coût de la dispersion
      * @param pollenized    L'état de pollinisation du patch de l'individu
-     * @param dispNeeded    Si on souhaite les pressions dispersantes ou résidentes
      * @param press         Le vecteur de pression à remplir
      */
-    void calcPress(double delta, double c, bool pollenized, bool dispNeeded, std::vector<double>& press);
+    void calcDispPress(double delta, double c, bool pollenized, std::vector<double>& press);
+
+    /**
+     * @brief
+     * Méthode qui calcule les pressions en propagules résidentes générées par cet individu.
+     *
+     * @param delta         La dépression de consanguinité
+     * @param c             Le coût de la dispersion
+     * @param pollenized    L'état de pollinisation du patch de l'individu
+     * @param press         Le vecteur de pression à remplir
+     */
+    void calcResidPress(double delta, bool pollenized, std::vector<double>& press);
 };
 
 

@@ -42,29 +42,28 @@ void Patch::isPollenized(void)
     }
 }
 
-void Patch::getPression(double delta, double c, bool dispNeeded, std::vector<double>& press)
+void Patch::getDispPress(double delta, double c, std::vector<double>& press)
+{
+    if(dispSeeds.empty()) //Si le vecteur est vide, il faut le remplir.
+    {
+        int i = 0;
+
+        dispSeeds.reserve(2*K);
+        for(i=0; i<K; i++)
+        {
+            population[i].calcDispPress(delta, c, pollenized, dispSeeds);
+        }
+    }
+
+    press.insert(press.end(), dispSeeds.begin(), dispSeeds.end());
+}
+
+void Patch::getResidPress(double delta, std::vector<double>& press)
 {
     int i = 0;
 
-    if (dispNeeded)
+    for(i=0; i<K; i++)
     {
-        if(dispSeeds.empty()) //Si le vecteur est vide, il faut le remplir.
-        {
-            dispSeeds.reserve(2*K);
-            for(i=0; i<K; i++)
-            {
-                population[i].calcPress(delta, c, pollenized, dispNeeded, dispSeeds);
-            }
-        }
-
-        press.insert(press.end(), dispSeeds.begin(), dispSeeds.end());
-    }
-
-    else
-    {
-        for(i=0; i<K; i++)
-        {
-            population[i].calcPress(delta, c, pollenized, dispNeeded, press);
-        }
+        population[i].calcResidPress(delta, pollenized, press);
     }
 }

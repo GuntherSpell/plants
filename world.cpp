@@ -154,7 +154,7 @@ void World::createNextGen (int idPatch)
 
     if (idPatch != 0)
     {
-        patches[idPatch - 1].getPression(delta, c, true, press);
+        patches[idPatch - 1].getDispPress(delta, c, press);
 
         /* On peut vider le vecteur car il n'est plus utile. */
         clear_and_freeVector(patches[idPatch - 1].dispSeeds);
@@ -163,11 +163,11 @@ void World::createNextGen (int idPatch)
         firstMother = patches[idPatch - 1].pos_of_first_ind;
     }
 
-    patches[idPatch].getPression(delta, c, false, press);
+    patches[idPatch].getResidPress(delta, press);
 
     if (idPatch != NPatch - 1)
     {
-        patches[idPatch + 1].getPression(delta, c, true, press);
+        patches[idPatch + 1].getDispPress(delta, c, press);
     }
 
     for (i=firstMother; i<firstMother + int(press.size()) + 1; i++)
