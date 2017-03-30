@@ -24,22 +24,6 @@ Patch::Patch(double p, int K, double sInit, double dInit, int pos_of_first_ind)
         /* On initialise des individus non consanguins. */
         population.emplace_back(sInit, dInit, 0);
     }
-
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    generator.seed (seed);
-
-    isPollenized();
-}
-
-void Patch::isPollenized(void)
-{
-    std::uniform_real_distribution<double> unif(0, 1);
-
-    pollenized = false;
-    if (unif(generator) <= p)
-    {
-        pollenized = true;
-    }
 }
 
 void Patch::getDispPress(double delta, double c, std::vector<double>& press)

@@ -100,13 +100,16 @@ void World::run(int idWorld)
 
     for(genCount=0; genCount<=NGen; genCount++)
     {
+        for(i=0; i<NPatch; i++)
+        {
+            patches[i].pollenized = redefinePollination(patches[i].p);
+        }
+
         if(genCount%genReport == 0) {writeReport();}
 
         for(i=0; i<NPatch; i++) {createNextGen(i);}
 
         if(relationshipIsManaged) {calcNewRelationships();}
-
-        for(i=0; i<NPatch; i++) {patches[i].isPollenized();}
 
         /* Indique la progression à l'écran */
         if (genCount*78/NGen > progress)
@@ -323,6 +326,18 @@ int World::getFather(int patchMother, int mother)
     while (father == mother); //Pas de pseudo allofécondation
 
     return father;
+}
+
+bool World::redefinePollination(double p)
+{
+    std::uniform_real_distribution<double> unif(0, 1);
+
+    if (unif(generator) <= p)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void World::calcNewRelationships(void)

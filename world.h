@@ -213,6 +213,15 @@ private:
      */
     int getFather(int patchMother, int mother);
 
+    /**
+     * @brief
+     * Méthode qui redéfinit l'état de pollinisation d'un patch
+     * à partir de sa probabilité d'être pollinisé.
+     *
+     * @param p     La probabilité d'être pollinisé.
+     */
+    bool redefinePollination(double p);
+
     /** @brief Méthode qui va recalculer les apparentements entre tous les individus. */
     void calcNewRelationships(void);
 
