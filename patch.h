@@ -2,6 +2,7 @@
 #define PATCH_H_INCLUDED
 
 #include <vector>
+#include <array>
 
 #include "individual.h"
 
@@ -30,6 +31,16 @@ public:
     double p; /**< @brief La probabilité d'être pollinisé */
 
     bool pollenized; /**< @brief L'état de pollinisation */
+
+    /** @brief Si le taux de dispersion des individus du patch est stable dans le temps. */
+    bool d_hasConverged;
+    /** @brief Si le taux d'autofécondation des individus du patch est stable dans le temps. */
+    bool s_hasConverged;
+
+    std::array<double, 2> previous_d_means; /**< @brief 2 dernières valeurs de la moyenne de d. */
+    std::array<double, 2> previous_d_vars; /**< @brief 2 dernières valeurs de la variance de d. */
+    std::array<double, 2> previous_s_means; /**< @brief 2 dernières valeurs de la moyenne de s. */
+    std::array<double, 2> previous_s_vars; /**< @brief 2 dernières valeurs de la variance de d. */
 
     /**
     * @brief La position absolue (dans le monde entier) du premier individu du patch.
@@ -73,6 +84,10 @@ public:
      * @param press         Le vecteur de pression à remplir
      */
     void getResidPress(double delta, std::vector<double>& press);
+
+    bool check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals);
+
+    void calc_mean_var(std::vector<double> values, std::array<double, 2>& mean_var);
 };
 
 #endif // PATCH_H_INCLUDED

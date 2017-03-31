@@ -219,6 +219,8 @@ private:
      * à partir de sa probabilité d'être pollinisé.
      *
      * @param p     La probabilité d'être pollinisé.
+     *
+     * @return      Si le patch est pollinisé ou non.
      */
     bool redefinePollination(double p);
 
