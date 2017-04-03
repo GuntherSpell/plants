@@ -85,6 +85,8 @@ public:
      */
     void getResidPress(double delta, std::vector<double>& press);
 
+    int check_convergence(int reportCount);
+
     bool check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals);
 
     void calc_mean_var(std::vector<double> values, std::array<double, 2>& mean_var);

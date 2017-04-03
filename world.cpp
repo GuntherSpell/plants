@@ -112,86 +112,16 @@ void World::run(int idWorld)
         {
             writeReport();
 
-            if(reportCount < 2)
-            {
-                for(i=0; i<NPatch; i++)
-                {
-                    int j = 0;
-
-                    std::array<double, 2> mean_var = {0,0};
-
-                    std::vector<double> list_of_d;
-                    std::vector<double> list_of_s;
-
-                    for(j=0; j<patches[i].K; j++)
-                    {
-                        list_of_d.push_back(patches[i].population[j].d);
-                        list_of_s.push_back(patches[i].population[j].s);
-                    }
-
-                    patches[i].calc_mean_var(list_of_d, mean_var);
-                    patches[i].previous_d_means[reportCount%2] = mean_var[0];
-                    patches[i].previous_d_vars[reportCount%2] = mean_var[1];
-
-                    patches[i].calc_mean_var(list_of_s, mean_var);
-                    patches[i].previous_s_means[reportCount%2] = mean_var[0];
-                    patches[i].previous_s_vars[reportCount%2] = mean_var[1];
-                }
-            }
-
-            else
-            {
-                for(i=0; i<NPatch; i++)
-                {
-                    int j = 0;
-                    std::array<double, 2> mean_var = {0,0};
-
-                    if(!patches[i].d_hasConverged)
-                    {
-                        std::vector<double> list_of_d;
-                        for(j=0; j<patches[i].K; j++)
-                        {
-                            list_of_d.push_back(patches[i].population[j].d);
-                        }
-
-                        patches[i].calc_mean_var(list_of_d, mean_var);
-
-                        patches[i].d_hasConverged = patches[i].check_stats(patches[i].previous_d_means, patches[i].previous_d_vars, mean_var);
-
-                        patches[i].previous_d_means[reportCount%2] = mean_var[0];
-                        patches[i].previous_d_vars[reportCount%2] = mean_var[1];
-                    }
-
-                    if(!patches[i].s_hasConverged)
-                    {
-                        std::vector<double> list_of_s;
-                        for(j=0; j<patches[i].K; j++)
-                        {
-                            list_of_s.push_back(patches[i].population[j].s);
-                        }
-
-                        patches[i].calc_mean_var(list_of_s, mean_var);
-
-                        patches[i].s_hasConverged = patches[i].check_stats(patches[i].previous_s_means, patches[i].previous_s_vars, mean_var);
-
-                        patches[i].previous_s_means[reportCount%2] = mean_var[0];
-                        patches[i].previous_s_vars[reportCount%2] = mean_var[1];
-                    }
-                }
-            }
-
-            reportCount ++;
-
             int sumOfConvergedPatches = 0;
+
             for(i=0; i<NPatch; i++)
             {
-                if(patches[i].d_hasConverged && patches[i].s_hasConverged)
-                {
-                    sumOfConvergedPatches ++;
-                }
+                sumOfConvergedPatches += patches[i].check_convergence(reportCount);
             }
 
-            if(sumOfConvergedPatches >NPatch*2/3) {return;}
+            if(sumOfConvergedPatches>NPatch*2/3) {return;}
+
+            reportCount ++;
         }
 
         if(relationshipIsManaged) {calcNewRelationships();}

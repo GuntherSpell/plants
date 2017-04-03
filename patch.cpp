@@ -60,10 +60,79 @@ void Patch::getResidPress(double delta, std::vector<double>& press)
     }
 }
 
+int Patch::check_convergence(int reportCount)
+{
+    int i = 0;
+
+    std::vector<double> trait_values;
+    std::array<double, 2> new_mean_var = {0,0};
+
+    trait_values.reserve(K);
+
+    if(reportCount<2)
+    {
+        /* Pour d */
+        for(i=0; i<K; i++)
+        {
+            trait_values.push_back(population[i].d);
+        }
+
+        calc_mean_var(trait_values, new_mean_var);
+        previous_d_means[reportCount%2] = new_mean_var[0];
+
+        trait_values.clear();
+
+        /* Pour s */
+        for(i=0; i<K; i++)
+        {
+            trait_values.push_back(population[i].s);
+        }
+
+        calc_mean_var(trait_values, new_mean_var);
+        previous_s_means[reportCount%2] = new_mean_var[0];
+    }
+
+    else
+    {
+        if(d_hasConverged && s_hasConverged)
+        {
+            return 1; //Le patch a convergé, on renvoie 1 pour sommer tous le patchs convergé.
+        }
+
+        /* Pour d */
+        for(i=0; i<K; i++)
+        {
+            trait_values.push_back(population[i].d);
+        }
+
+        calc_mean_var(trait_values, new_mean_var);
+
+        d_hasConverged = check_stats(previous_d_means, previous_d_vars, new_mean_var);
+
+        previous_d_means[reportCount%2] = new_mean_var[0];
+
+        trait_values.clear();
+
+        /* Pour s */
+        for(i=0; i<K; i++)
+        {
+            trait_values.push_back(population[i].s);
+        }
+
+        calc_mean_var(trait_values, new_mean_var);
+
+        s_hasConverged = check_stats(previous_s_means, previous_s_vars, new_mean_var);
+
+        previous_s_means[reportCount%2] = new_mean_var[0];
+    }
+
+    return 0;
+}
+
 bool Patch::check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals)
 {
-    if(std::abs(new_vals[0] - previous_means[0])/previous_means[0] < 0.015 &&
-       std::abs(new_vals[0] - previous_means[1])/previous_means[1] < 0.015)
+    if(std::abs(new_vals[0] - previous_means[0])/previous_means[0] < 0.05 &&
+       std::abs(new_vals[0] - previous_means[1])/previous_means[1] < 0.05)
     {
         return true;
     }
@@ -86,13 +155,14 @@ void Patch::calc_mean_var(std::vector<double> values, std::array<double, 2>& mea
     double mean = sum/values.size();
 
     /* Calcul de la variance */
+    /*
     double var = 0;
 
     for(i=0; i<int(values.size()); i++)
     {
         var += (values[i] - mean)*(values[i] - mean);
     }
-
+    */
     mean_var[0] = mean;
-    mean_var[1] = var;
+    //mean_var[1] = var;
 }
