@@ -96,7 +96,7 @@ int Patch::check_convergence(int reportCount)
     {
         if(d_hasConverged && s_hasConverged)
         {
-            return 1; //Le patch a convergé, on renvoie 1 pour sommer tous le patchs convergé.
+            return 1; //Le patch a convergé, on renvoie 1 pour sommer tous le patchs convergés.
         }
 
         /* Pour d */
@@ -131,8 +131,13 @@ int Patch::check_convergence(int reportCount)
 
 bool Patch::check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals)
 {
-    if(std::abs(new_vals[0] - previous_means[0])/previous_means[0] < 0.05 &&
-       std::abs(new_vals[0] - previous_means[1])/previous_means[1] < 0.05)
+    /* On a deux critères avec un OU logique
+    En variation relative: efficace quand la valeur est haute
+    En variation absolue: efficace quand la valeur est basse */
+    if((std::abs(new_vals[0] - previous_means[0])/previous_means[0] < 0.025 &&
+       std::abs(new_vals[0] - previous_means[1])/previous_means[1] < 0.025) ||
+       (std::abs(new_vals[0] - previous_means[0]) < 0.007 &&
+       std::abs(new_vals[0] - previous_means[1]) < 0.007))
     {
         return true;
     }
