@@ -83,10 +83,39 @@ public:
      */
     void getResidPress(double delta, std::vector<double>& press);
 
+    /**
+     * @brief
+     * Méthode qui vérifie l'état de convergence du patch par rapport aux deux états précédents
+     *
+     * @param reportCount           Le numéro de la vérification pour savoir où ajouter le nouvel état
+     * @param relativeConvergence   Le critère de variation relative pour juger de l'état de convergence
+     * @param absoluteConvergence   Le critère de variation absoule pour juger de l'état de convergence
+     *
+     * @return                      1 si le patch a convergé, 0 sinon. Utile pour facilement connaitre le nbr de patchs convergés.
+     */
     int check_convergence(int reportCount, double relativeConvergence, double absoluteConvergence);
 
-    bool check_stats(std::array<double, 2> previous_means, std::array<double, 2> new_vals, double relativeConvergence, double absoluteConvergence);
+    /**
+     * @brief
+     * Méthode qui vérifie si un trait a convergé par rapport à deux états précédents.
+     *
+     * @param previous_means    Les valeurs de moyennes précédentes.
+     * @param new_mean          La nouvelle valeur de la moyenne, à comparer avec les précédentes
+     * @param relativeConvergence   Le critère de variation relative pour juger de l'état de convergence
+     * @param absoluteConvergence   Le critère de variation absoule pour juger de l'état de convergence
+     *
+     * @return                      Vrai si le trait a convergé, faux sinon
+     */
+    bool check_stats(std::array<double, 2> previous_means, double new_mean, double relativeConvergence, double absoluteConvergence);
 
+    /**
+     * @brief
+     * Méthode qui calcule la moyenne d'un ensemble de valeurs numériques.
+     *
+     * @param values    Vecteur qui contient les valeurs
+     *
+     * @return          La valeur de la moyenne
+     */
     double calc_mean(std::vector<double> values);
 };
 

@@ -2,6 +2,7 @@
 #define ENGINE_H_INCLUDED
 
 #include <vector>
+#include <array>
 
 /**
  * @file
@@ -17,7 +18,7 @@
  * @param NWorld        Valeur du nombre de mondes à modifier
  * @param NReplicats    Valeur du nombre de réplicats à modifier
  */
-void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats);
+void getParamsFromTxt(std::vector<std::array<double, 23>>& params, int& NWorld, int& NReplicats);
 
 /** @brief Fonction qui lance la simulation pour tous les mondes */
 void runSimu(void);

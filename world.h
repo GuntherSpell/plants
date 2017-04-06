@@ -91,10 +91,10 @@ private:
     double d_s_relativeMutation; /** @brief Mutation relative de d et s. Si égale à 1, seul d mute. */
 
     bool convergenceToBeChecked; /**< @brief Indique si on doit vérifier l'état de convergence */
-    int NPatchToConverge;
-    double relativeConvergence;
-    double absoluteConvergence;
-    int checkConvergenceFrequency;
+    int NPatchToConverge; /**< @brief Le nombre de patchs qui doivent converger pour que le monde ait convergé */
+    double relativeConvergence; /**< @brief Le critère de variation relative pour juger de l'état de convergence */
+    double absoluteConvergence; /**< @brief Le critère de variation absoule pour juger de l'état de convergence */
+    int checkConvergenceFrequency; /**< @brief La fréquence à laquelle l'état de convergence doit être vérifié */
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */

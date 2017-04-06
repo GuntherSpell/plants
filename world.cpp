@@ -419,6 +419,9 @@ void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax
     report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
     report << "Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
     report << "Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
+    report << "Vérifier convergence:" << convergenceToBeChecked << " N de patchs à converger=" << NPatchToConverge;
+    report << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
+    report << " Fréquence=" << checkConvergenceFrequency << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 }
 

@@ -1,46 +1,61 @@
 #include <vector>
-#include <iostream>
+#include <array>
 #include <fstream>
+#include <iostream>
 
 #include "engine.h"
 #include "world.h"
 
-void getParamsFromTxt(std::vector<double>& params, int& NWorld, int& NReplicats)
+void getParamsFromTxt(std::vector<std::array<double, 23>>& params, int& NWorld, int& NReplicats)
 {
-    int i = 0;
+    int i = 0, j = 0;
     std::ifstream config("config.txt");
 
-    config.ignore(500,'>');
-    config.ignore(256,' ');
+    config.ignore(256,'\n');
     config >> NWorld;
 
-    config.ignore(256,' ');
+    config.ignore(256,'\t');
     config >> NReplicats;
 
-    for (i=0; i<18*NWorld; i++)
+    params.reserve(NWorld);
+
+    config.ignore(256,'\n');
+    config.ignore(256,'\n');
+
+    for(i=0; i<NWorld; i++)
     {
-        double val;
-        config.ignore(256,' ');
-        config >> val;
-        params.push_back(val);
+        std::array<double, 23> paramOneWorld = {0,};
+
+        for(j=0; j<23; j++)
+        {
+            double val = 0;
+            config >> val;
+            paramOneWorld[j] = val;
+            config.ignore(1,'\t');
+
+            std::cout << paramOneWorld[j] << ' ';
+        }
+
+        params.push_back(paramOneWorld);
     }
 }
 
 void runSimu(void)
 {
     int i = 0, j = 0, NWorld = 0, NReplicats = 0;
-    std::vector<double> params;
+    std::vector<std::array<double, 23>> params;
 
     getParamsFromTxt(params, NWorld, NReplicats);
 
-    for (i=0; i<NWorld; i++)
+    for(i=0; i<NWorld; i++)
     {
-        for (j=0; j<NReplicats; j++)
+        for(j=0; j<NReplicats; j++)
         {
-            World world(i*NReplicats + j, params[i], params[NWorld+i], params[2*NWorld+i], params[3*NWorld+i], params[4*NWorld+i],
-            params[5*NWorld+i], params[6*NWorld+i], params[7*NWorld+i], params[8*NWorld+i],
-            params[9*NWorld+i], params[10*NWorld+i], params[11*NWorld+i], params[12*NWorld+i],
-            params[13*NWorld+i], params[14*NWorld+i], params[15*NWorld+i], params[16*NWorld+i], params[17*NWorld+i]);
+            World world(i*NReplicats + j, params[i][0], params[i][1], params[i][2], params[i][3],
+            params[i][4], params[i][5], params[i][6], params[i][7], params[i][8], params[i][9],
+            params[i][10], params[i][11], params[i][12], params[i][13], params[i][14],
+            params[i][15], params[i][16], params[i][17], params[i][18], params[i][19],
+            params[i][20], params[i][21], params[i][22]);
             world.run(i*NReplicats + j);
         }
     }
