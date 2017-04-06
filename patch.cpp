@@ -29,9 +29,7 @@ Patch::Patch(double p, int K, double sInit, double dInit, int pos_of_first_ind)
     s_hasConverged = false;
 
     previous_d_means = {0,0};
-    previous_d_vars = {0,0};
     previous_s_means = {0,0};
-    previous_s_vars = {0,0};
 }
 
 void Patch::getDispPress(double delta, double c, std::vector<double>& press)
@@ -60,12 +58,11 @@ void Patch::getResidPress(double delta, std::vector<double>& press)
     }
 }
 
-int Patch::check_convergence(int reportCount)
+int Patch::check_convergence(int reportCount, double relativeConvergence, double absoluteConvergence)
 {
     int i = 0;
 
     std::vector<double> trait_values;
-    std::array<double, 2> new_mean_var = {0,0};
 
     trait_values.reserve(K);
 
@@ -77,8 +74,7 @@ int Patch::check_convergence(int reportCount)
             trait_values.push_back(population[i].d);
         }
 
-        calc_mean_var(trait_values, new_mean_var);
-        previous_d_means[reportCount%2] = new_mean_var[0];
+        previous_d_means[reportCount] = calc_mean(trait_values);
 
         trait_values.clear();
 
@@ -88,56 +84,61 @@ int Patch::check_convergence(int reportCount)
             trait_values.push_back(population[i].s);
         }
 
-        calc_mean_var(trait_values, new_mean_var);
-        previous_s_means[reportCount%2] = new_mean_var[0];
+        previous_s_means[reportCount] = calc_mean(trait_values);
     }
 
     else
     {
+        /* Pour d */
+        if(!d_hasConverged)
+        {
+            for(i=0; i<K; i++)
+            {
+                trait_values.push_back(population[i].d);
+            }
+
+            double new_d_mean = calc_mean(trait_values);
+
+            d_hasConverged = check_stats(previous_d_means, new_d_mean, relativeConvergence, absoluteConvergence);
+
+            previous_d_means[reportCount%2] = new_d_mean;
+
+            trait_values.clear();
+        }
+
+        /* Pour s */
+        if(!s_hasConverged)
+        {
+            for(i=0; i<K; i++)
+            {
+                trait_values.push_back(population[i].s);
+            }
+
+            double new_s_mean = calc_mean(trait_values);
+
+            s_hasConverged = check_stats(previous_s_means, new_s_mean, relativeConvergence, absoluteConvergence);
+
+            previous_s_means[reportCount%2] = new_s_mean;
+        }
+
         if(d_hasConverged && s_hasConverged)
         {
             return 1; //Le patch a convergé, on renvoie 1 pour sommer tous le patchs convergés.
         }
-
-        /* Pour d */
-        for(i=0; i<K; i++)
-        {
-            trait_values.push_back(population[i].d);
-        }
-
-        calc_mean_var(trait_values, new_mean_var);
-
-        d_hasConverged = check_stats(previous_d_means, previous_d_vars, new_mean_var);
-
-        previous_d_means[reportCount%2] = new_mean_var[0];
-
-        trait_values.clear();
-
-        /* Pour s */
-        for(i=0; i<K; i++)
-        {
-            trait_values.push_back(population[i].s);
-        }
-
-        calc_mean_var(trait_values, new_mean_var);
-
-        s_hasConverged = check_stats(previous_s_means, previous_s_vars, new_mean_var);
-
-        previous_s_means[reportCount%2] = new_mean_var[0];
     }
 
     return 0;
 }
 
-bool Patch::check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals)
+bool Patch::check_stats(std::array<double, 2> previous_means, double new_mean, double relativeConvergence, double absoluteConvergence)
 {
     /* On a deux critères avec un OU logique
     En variation relative: efficace quand la valeur est haute
     En variation absolue: efficace quand la valeur est basse */
-    if((std::abs(new_vals[0] - previous_means[0])/previous_means[0] < 0.025 &&
-       std::abs(new_vals[0] - previous_means[1])/previous_means[1] < 0.025) ||
-       (std::abs(new_vals[0] - previous_means[0]) < 0.007 &&
-       std::abs(new_vals[0] - previous_means[1]) < 0.007))
+    if((std::abs(new_mean - previous_means[0])/previous_means[0] < relativeConvergence &&
+       std::abs(new_mean - previous_means[1])/previous_means[1] < relativeConvergence) ||
+       (std::abs(new_mean - previous_means[0]) < absoluteConvergence &&
+       std::abs(new_mean - previous_means[1]) < absoluteConvergence))
     {
         return true;
     }
@@ -145,11 +146,10 @@ bool Patch::check_stats(std::array<double, 2> previous_means, std::array<double,
     return false;
 }
 
-void Patch::calc_mean_var(std::vector<double> values, std::array<double, 2>& mean_var)
+double Patch::calc_mean(std::vector<double> values)
 {
     int i = 0;
 
-    /* Calcul de la moyenne */
     double sum = 0;
 
     for(i=0; i<int(values.size()); i++)
@@ -157,17 +157,5 @@ void Patch::calc_mean_var(std::vector<double> values, std::array<double, 2>& mea
         sum += values[i];
     }
 
-    double mean = sum/values.size();
-
-    /* Calcul de la variance */
-    /*
-    double var = 0;
-
-    for(i=0; i<int(values.size()); i++)
-    {
-        var += (values[i] - mean)*(values[i] - mean);
-    }
-    */
-    mean_var[0] = mean;
-    //mean_var[1] = var;
+    return sum/values.size();
 }

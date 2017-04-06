@@ -14,7 +14,9 @@
 
 World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
-             double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport)
+             double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
+             bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
+             int checkConvergenceFrequency, int NGen, int genReport)
 {
     int i = 0, j = 0;
 
@@ -29,6 +31,12 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->mu = mu;
     this->sigmaZ = sigmaZ;
     this->d_s_relativeMutation = d_s_relativeMutation;
+
+    this->convergenceToBeChecked = convergenceToBeChecked;
+    this->NPatchToConverge = NPatchToConverge;
+    this->relativeConvergence = relativeConvergence;
+    this->absoluteConvergence = absoluteConvergence;
+    this->checkConvergenceFrequency = checkConvergenceFrequency;
 
     this->NGen = NGen;
     genCount = 0;
@@ -94,7 +102,7 @@ double World::distr(double minVal, double maxVal, double sigma, int posPatch)
 
 void World::run(int idWorld)
 {
-    int i = 0, progress = 0, reportCount = 0;
+    int i = 0, progress = 0, checkCount = 0;
 
     std::cout << "Progression du monde " << idWorld << " :" << std::endl;
     printProgress(0);
@@ -111,17 +119,20 @@ void World::run(int idWorld)
         if(genCount%genReport == 0)
         {
             writeReport();
+        }
 
+        if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0)
+        {
             int sumOfConvergedPatches = 0;
 
             for(i=0; i<NPatch; i++)
             {
-                sumOfConvergedPatches += patches[i].check_convergence(reportCount);
+                sumOfConvergedPatches += patches[i].check_convergence(checkCount, relativeConvergence, absoluteConvergence);
             }
 
-            if(sumOfConvergedPatches>NPatch*2/3) {return;}
+            if(sumOfConvergedPatches >= NPatchToConverge) {return;} // Si on a rempli le critère de convergence, on arrête la simu
 
-            reportCount ++;
+            checkCount ++;
         }
 
         if(relationshipIsManaged) {calcNewRelationships();}
@@ -429,6 +440,16 @@ void World::writeReport(void)
     }
 
 
-    if (NGen - genCount < genReport) {report.close();}
+    if (NGen - genCount < genReport)
+    {
+        std::ofstream converge_report;
+        converge_report.open ("conv.txt");
+        for(i=0; i<NPatch; i++)
+        {
+            converge_report << i << ": d=" << patches[i].d_hasConverged << " s=" << patches[i].s_hasConverged << std::endl;
+        }
+        converge_report.close();
+        report.close();
+    }
 }
 

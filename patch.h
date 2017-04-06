@@ -38,9 +38,7 @@ public:
     bool s_hasConverged;
 
     std::array<double, 2> previous_d_means; /**< @brief 2 dernières valeurs de la moyenne de d. */
-    std::array<double, 2> previous_d_vars; /**< @brief 2 dernières valeurs de la variance de d. */
     std::array<double, 2> previous_s_means; /**< @brief 2 dernières valeurs de la moyenne de s. */
-    std::array<double, 2> previous_s_vars; /**< @brief 2 dernières valeurs de la variance de d. */
 
     /**
     * @brief La position absolue (dans le monde entier) du premier individu du patch.
@@ -85,11 +83,11 @@ public:
      */
     void getResidPress(double delta, std::vector<double>& press);
 
-    int check_convergence(int reportCount);
+    int check_convergence(int reportCount, double relativeConvergence, double absoluteConvergence);
 
-    bool check_stats(std::array<double, 2> previous_means, std::array<double, 2> previous_vars, std::array<double, 2> new_vals);
+    bool check_stats(std::array<double, 2> previous_means, std::array<double, 2> new_vals, double relativeConvergence, double absoluteConvergence);
 
-    void calc_mean_var(std::vector<double> values, std::array<double, 2>& mean_var);
+    double calc_mean(std::vector<double> values);
 };
 
 #endif // PATCH_H_INCLUDED

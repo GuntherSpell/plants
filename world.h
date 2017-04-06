@@ -52,7 +52,9 @@ public:
      */
     World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
-          double Pmin, double Pmax, double sigmaP, double sInit, double dInit, int NGen, int genReport);
+          double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
+          bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
+          int checkConvergenceFrequency, int NGen, int genReport);
 
     /**
      * @brief
@@ -87,6 +89,12 @@ private:
     double mu; /**< @brief La probabilité de mutation */
     double sigmaZ; /**< @brief L'ampleur de la mutation */
     double d_s_relativeMutation; /** @brief Mutation relative de d et s. Si égale à 1, seul d mute. */
+
+    bool convergenceToBeChecked; /**< @brief Indique si on doit vérifier l'état de convergence */
+    int NPatchToConverge;
+    double relativeConvergence;
+    double absoluteConvergence;
+    int checkConvergenceFrequency;
 
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
