@@ -437,8 +437,8 @@ void World::writeReport(void)
             report << genCount << '\t';
             report << j << '\t';
             report << i << '\t';
-            report << patches[j].population[i].s << '\t';
-            report << patches[j].population[i].d << std::endl;
+            report << std::round(patches[j].population[i].s * 1000) / 1000 << '\t';
+            report << std::round(patches[j].population[i].d * 1000) / 1000 << std::endl;
         }
     }
 
