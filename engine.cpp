@@ -1,7 +1,6 @@
 #include <vector>
 #include <array>
 #include <fstream>
-#include <iostream>
 
 #include "engine.h"
 #include "world.h"
@@ -32,8 +31,6 @@ void getParamsFromTxt(std::vector<std::array<double, 23>>& params, int& NWorld, 
             config >> val;
             paramOneWorld[j] = val;
             config.ignore(1,'\t');
-
-            std::cout << paramOneWorld[j] << ' ';
         }
 
         params.push_back(paramOneWorld);
