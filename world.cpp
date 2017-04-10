@@ -445,13 +445,6 @@ void World::writeReport(void)
 
     if (NGen - genCount < genReport)
     {
-        std::ofstream converge_report;
-        converge_report.open ("conv.txt");
-        for(i=0; i<NPatch; i++)
-        {
-            converge_report << i << ": d=" << patches[i].d_hasConverged << " s=" << patches[i].s_hasConverged << std::endl;
-        }
-        converge_report.close();
         report.close();
     }
 }
