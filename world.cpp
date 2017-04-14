@@ -253,35 +253,39 @@ void World::newInd(int whr, int mother, bool autof)
     /* Issue d'autof */
     if(autof)
     {
+        double f = 1;
+
         if(relationshipIsManaged)
         {
-            double f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
+            f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
             mothers.push_back(mother);
             fathers.push_back(mother);
         }
 
         juveniles[whr].emplace_back(patches[patchMother].population[mother_PosInPatch].s,
-                                    patches[patchMother].population[mother_PosInPatch].d, 1);
+                                    patches[patchMother].population[mother_PosInPatch].d, f);
 
     }
 
     /* Sinon, on cherche un père. */
     else
     {
+        double f = 0;
+
         int father = getFather(patchMother, mother_PosInPatch);
 
         if(relationshipIsManaged)
         {
             mothers.push_back(mother);
             fathers.push_back(patches[patchMother].pos_of_first_ind + father);
-            double f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
+            f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
 
         }
 
         juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s +
                                      patches[patchMother].population[father].s)/2,
                                     (patches[patchMother].population[mother_PosInPatch].d +
-                                     patches[patchMother].population[father].d)/2, 0);
+                                     patches[patchMother].population[father].d)/2, f);
     }
 }
 
