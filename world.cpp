@@ -245,7 +245,6 @@ void World::createNextGen (int idPatch)
 
 void World::newInd(int whr, int mother, bool autof)
 {
-    double f = 0;
 
     /* On récupère la position relative de la mère dans son patch. */
     int patchMother = globalPop[mother].patch;
@@ -256,13 +255,13 @@ void World::newInd(int whr, int mother, bool autof)
     {
         if(relationshipIsManaged)
         {
-            f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
+            double f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
             mothers.push_back(mother);
             fathers.push_back(mother);
         }
 
         juveniles[whr].emplace_back(patches[patchMother].population[mother_PosInPatch].s,
-                                    patches[patchMother].population[mother_PosInPatch].d, f);
+                                    patches[patchMother].population[mother_PosInPatch].d, 1);
 
     }
 
@@ -275,14 +274,14 @@ void World::newInd(int whr, int mother, bool autof)
         {
             mothers.push_back(mother);
             fathers.push_back(patches[patchMother].pos_of_first_ind + father);
-            f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
+            double f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
 
         }
 
         juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s +
                                      patches[patchMother].population[father].s)/2,
                                     (patches[patchMother].population[mother_PosInPatch].d +
-                                     patches[patchMother].population[father].d)/2, f);
+                                     patches[patchMother].population[father].d)/2, 0);
     }
 }
 

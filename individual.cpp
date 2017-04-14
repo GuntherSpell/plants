@@ -14,11 +14,11 @@ Individual::Individual(double s, double d, double f)
 
 void Individual::calcDispPress(double delta, double c, bool pollenized, std::vector<double>& press)
 {
-    press.push_back(s*(1-delta)*(d/2)*(1-c));
+    press.push_back(s*(1-f*delta)*(1-c)*(d/2));
 
     if(pollenized)
     {
-        press.push_back((1-s)*(1-c)*(d/2));
+        press.push_back((1-s)*(1-f*delta)*(1-c)*(d/2));
     }
 
     else
@@ -29,11 +29,11 @@ void Individual::calcDispPress(double delta, double c, bool pollenized, std::vec
 
 void Individual::calcResidPress(double delta, bool pollenized, std::vector<double>& press)
 {
-    press.push_back(s*(1-delta)*(1-d));
+    press.push_back(s*(1-f*delta)*(1-d));
 
     if(pollenized)
     {
-        press.push_back((1-s)*(1-d));
+        press.push_back((1-s)*(1-f*delta)*(1-d));
     }
 
     else
