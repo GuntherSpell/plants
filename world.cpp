@@ -109,17 +109,17 @@ void World::run(int idWorld)
 
     for(genCount=0; genCount<=NGen; genCount++)
     {
+        if(genCount%genReport == 0)
+        {
+            writeReport();
+        }
+
         for(i=0; i<NPatch; i++)
         {
             patches[i].pollenized = redefinePollination(patches[i].p);
         }
 
         for(i=0; i<NPatch; i++) {createNextGen(i);}
-
-        if(genCount%genReport == 0)
-        {
-            writeReport();
-        }
 
         if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0)
         {
