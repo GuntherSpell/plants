@@ -246,7 +246,7 @@ private:
 
     /**
      * @brief
-     * Méthode qui écrit l'entête dans le rapport
+     * Méthode qui écrit l'entête dans le rapport et dans le journal de pollinisation
      *
      * @param Kmin      La capacité d'accueil minimale.
      * @param Kmax      La capacité d'accueil maximale.
@@ -255,7 +255,7 @@ private:
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    void writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP);
+    void writeHeaders(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP);
 
     /** @brief Méthode qui écrit un rapport pour un génération donnée */
     void writeReport(void);

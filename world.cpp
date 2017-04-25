@@ -93,7 +93,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     generator.seed (seed);
 
-    writeHeader(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
+    writeHeaders(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
     writeReport();
 }
 
@@ -417,7 +417,7 @@ void World::printProgress(int progress)
     std::cout << "]" << std::endl;
 }
 
-void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP)
+void World::writeHeaders(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
     report << "Gestion de l'apparentement:" << relationshipIsManaged << std::endl;
@@ -430,6 +430,8 @@ void World::writeHeader(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax
     report << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
     report << " Fréquence=" << checkConvergenceFrequency << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
+
+    logPoll << "Gen" << '\t' << "Patch" << '\t' << "Etat" << std::endl;
 }
 
 void World::writeReport(void)
