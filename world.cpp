@@ -44,6 +44,8 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     report.open ("report_" + std::to_string(idWorld) + ".txt");
     this->genReport = genReport;
 
+    logPoll.open("logPoll_" + std::to_string(idWorld) + ".txt");
+
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
@@ -118,6 +120,8 @@ void World::run(int idWorld)
         {
             patches[i].pollenized = redefinePollination(patches[i].p);
         }
+
+        writeLogPoll();
 
         for(i=0; i<NPatch; i++) {createNextGen(i);}
 
@@ -449,6 +453,16 @@ void World::writeReport(void)
     if (NGen - genCount < genReport)
     {
         report.close();
+    }
+}
+
+void World::writeLogPoll(void)
+{
+    int i = 0;
+
+    for(i=0; i<NPatch; i++)
+    {
+        logPoll << genCount << '\t' << i << '\t' << patches[i].pollenized << std::endl;
     }
 }
 

@@ -134,6 +134,7 @@ private:
      */
     std::vector<int> mothers;
 
+    std::ofstream logPoll; /**< @brief Variable permettant d'écrire le journal de la pollinisation */
     std::ofstream report; /**< @brief Variable permettant d'écrire le rapport */
 
     /**
@@ -258,6 +259,9 @@ private:
 
     /** @brief Méthode qui écrit un rapport pour un génération donnée */
     void writeReport(void);
+
+    /** @brief Méthode qui écrit le journal de la pollinisation pour un génération donnée */
+    void writeLogPoll(void);
 
     /**
      * @brief
