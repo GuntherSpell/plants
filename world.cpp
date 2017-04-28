@@ -257,7 +257,7 @@ void World::newInd(int whr, int mother, bool autof)
     /* Issue d'autof */
     if(autof)
     {
-        double f = 1;
+        double f = 0.5;
 
         if(relationshipIsManaged)
         {
@@ -381,6 +381,7 @@ void World::calcNewRelationships(void)
     {
         for(j=0; j<=i; j++)
         {
+            /* Il faut remplir la diagonale pour les indivdus ayant un ou deux parents en commun. */
             if (i == j)
             {
                 /* On a besoin du taux de consanguinité de l'individu. */
@@ -394,7 +395,7 @@ void World::calcNewRelationships(void)
         }
     }
 
-    /*On vide les vecteurs. */
+    /* On vide les vecteurs. */
     fathers.clear();
     mothers.clear();
 }

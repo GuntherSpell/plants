@@ -45,6 +45,20 @@ public:
      * @param press         Le vecteur de pression à remplir
      */
     void calcResidPress(double delta, bool pollenized, std::vector<double>& press);
+
+private:
+
+    /**
+     * @brief
+     * Méthode qui calcule la dépression de consanguinité
+     * subie par l'individu à partir de son taux de consanguinité.
+     *
+     * @param delta La dépression de consanguinité maximale (si le taux de consanguinité est de 1).
+     * @param f     Le taux de consanguinité de l'individu.
+     *
+     * @return      La dépression de consanguinité subie par l'individu.
+     */
+    double f_to_delta(double delta, double f);
 };
 
 
