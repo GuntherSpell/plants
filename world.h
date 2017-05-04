@@ -136,6 +136,7 @@ private:
 
     std::ofstream logPoll; /**< @brief Variable permettant d'écrire le journal de la pollinisation */
     std::ofstream report; /**< @brief Variable permettant d'écrire le rapport */
+    std::ofstream relation_report; /**< @brief Variable permettant d'écrire tous les apperentements */
 
     /**
      * @brief
@@ -262,6 +263,8 @@ private:
 
     /** @brief Méthode qui écrit le journal de la pollinisation pour un génération donnée */
     void writeLogPoll(void);
+
+    void writeRelationships(void);
 
     /**
      * @brief

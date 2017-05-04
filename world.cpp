@@ -46,6 +46,11 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
 
     logPoll.open("logPoll_" + std::to_string(idWorld) + ".txt");
 
+    if(relationshipIsManaged)
+    {
+        relation_report.open("relation_" + std::to_string(idWorld) + ".txt");
+    }
+
     /* Les lignes suivantes permettent de réserver
     de la mémoire pour éviter les réallocations
     qui peuvent diminuer les performances. */
@@ -87,6 +92,9 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
             /* Pour chacune des deux matrices, on construit Ktot lignes remplies de i+1 zéros. */
             relationship[0].emplace_back(i + 1);
             relationship[1].emplace_back(i + 1);
+
+            /* Pour la première matrice, il faut remplir la diagonale de 0.5. */
+            relationship[0][i][i] = 0.5;
         }
     }
 
@@ -134,7 +142,11 @@ void World::run(int idWorld)
                 sumOfConvergedPatches += patches[i].check_convergence(checkCount, relativeConvergence, absoluteConvergence);
             }
 
-            if(sumOfConvergedPatches >= NPatchToConverge) {return;} // Si on a rempli le critère de convergence, on arrête la simu
+            if(sumOfConvergedPatches >= NPatchToConverge)
+            {
+                if(relationshipIsManaged) {writeRelationships();}
+                return; // Si on a rempli le critère de convergence, on arrête la simu
+            }
 
             checkCount ++;
         }
@@ -148,6 +160,8 @@ void World::run(int idWorld)
             printProgress(progress);
         }
     }
+
+    writeRelationships();
 }
 
 void World::createNextGen (int idPatch)
@@ -382,16 +396,20 @@ void World::calcNewRelationships(void)
         for(j=0; j<=i; j++)
         {
             /* Il faut remplir la diagonale pour les indivdus ayant un ou deux parents en commun. */
-            if (i == j)
+            if(i == j)
             {
                 /* On a besoin du taux de consanguinité de l'individu. */
                 relationship[(genCount+1)%2][i][j] = 1/2 + patches[globalPop[i].patch].population[globalPop[i].posInPatch].f/2;
             }
 
-            relationship[(genCount+1)%2][i][j] = (relationship[genCount%2][mothers[i]][mothers[j]] +
-                                                  relationship[genCount%2][fathers[i]][fathers[j]] +
-                                                  relationship[genCount%2][fathers[i]][mothers[j]] +
-                                                  relationship[genCount%2][mothers[i]][fathers[j]])/4;
+            else
+            {
+                relationship[(genCount+1)%2][i][j] =
+                (relationship[genCount%2][std::max(mothers[i], mothers[j])][std::min(mothers[i], mothers[j])] +
+                 relationship[genCount%2][std::max(fathers[i], fathers[j])][std::min(fathers[i], fathers[j])] +
+                 relationship[genCount%2][std::max(fathers[i], mothers[j])][std::min(fathers[i], mothers[j])] +
+                 relationship[genCount%2][std::max(mothers[i], fathers[j])][std::min(mothers[i], fathers[j])])/4;
+            }
         }
     }
 
@@ -466,6 +484,40 @@ void World::writeLogPoll(void)
     for(i=0; i<NPatch; i++)
     {
         logPoll << genCount << '\t' << i << '\t' << patches[i].pollenized << std::endl;
+    }
+}
+
+void World::writeRelationships(void)
+{
+    int i = 0, j = 0, k = 0;
+    int ind_abs_id = 0; // La position absolue de l'individu (la ligne) concerné.
+
+    relation_report << '\t';
+
+    /* Première ligne. */
+    for(i=0; i<NPatch; i++)
+    {
+        for(j=0; j<patches[i].K; j++)
+        {
+            relation_report << j << '\t';
+        }
+    }
+
+    /* Reste de la matrice. */
+    for(i=0; i<NPatch; i++)
+    {
+        for(j=0; j<patches[i].K; j++)
+        {
+            relation_report << std::endl << j << '\t';
+
+            for(k=0; k<=ind_abs_id; k++)
+            {
+                //std::round(relationship[0][ind_abs_id][k] * 1000) / 1000
+                relation_report << relationship[0][ind_abs_id][k] << '\t';
+            }
+
+            ind_abs_id ++;
+        }
     }
 }
 
