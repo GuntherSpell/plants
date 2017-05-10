@@ -17,11 +17,11 @@ void Individual::calcDispPress(double delta, double c, bool pollenized, std::vec
     /* La dépression de consanguinité subie par l'individu, déterminée grace à la fonction f_to_delta. */
     double ind_delta = f_to_delta(delta, f);
 
-    press.push_back(s*(1-ind_delta)*(1-c)*(d/2));
+    press.push_back(s*(1-ind_delta)*(1-c)*(0.5*d));
 
     if(pollenized)
     {
-        press.push_back((1-s)*(1-ind_delta)*(1-c)*(d/2));
+        press.push_back((1-s)*(1-ind_delta)*(1-c)*(0.5*d));
     }
 
     else

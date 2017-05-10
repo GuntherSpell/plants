@@ -131,7 +131,10 @@ void World::run(int idWorld)
 
         writeLogPoll();
 
-        for(i=0; i<NPatch; i++) {createNextGen(i);}
+        for(i=0; i<NPatch; i++)
+        {
+            createNextGen(i);
+        }
 
         if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0)
         {
@@ -151,7 +154,10 @@ void World::run(int idWorld)
             checkCount ++;
         }
 
-        if(relationshipIsManaged) {calcNewRelationships();}
+        if(relationshipIsManaged)
+        {
+            calcNewRelationships();
+        }
 
         /* Indique la progression à l'écran */
         if (genCount*78/NGen > progress)
@@ -275,7 +281,7 @@ void World::newInd(int whr, int mother, bool autof)
 
         if(relationshipIsManaged)
         {
-            f = 1/2 + patches[patchMother].population[mother_PosInPatch].f/2;
+            f = 0.5 + patches[patchMother].population[mother_PosInPatch].f*0.5;
             mothers.push_back(mother);
             fathers.push_back(mother);
         }
@@ -300,10 +306,10 @@ void World::newInd(int whr, int mother, bool autof)
 
         }
 
-        juveniles[whr].emplace_back((patches[patchMother].population[mother_PosInPatch].s +
-                                     patches[patchMother].population[father].s)/2,
-                                    (patches[patchMother].population[mother_PosInPatch].d +
-                                     patches[patchMother].population[father].d)/2, f);
+        juveniles[whr].emplace_back(0.5*(patches[patchMother].population[mother_PosInPatch].s +
+                                     patches[patchMother].population[father].s),
+                                    0.5*(patches[patchMother].population[mother_PosInPatch].d +
+                                     patches[patchMother].population[father].d), f);
     }
 }
 
@@ -399,7 +405,7 @@ void World::calcNewRelationships(void)
             if(i == j)
             {
                 /* On a besoin du taux de consanguinité de l'individu. */
-                relationship[(genCount+1)%2][i][j] = 1/2 + patches[globalPop[i].patch].population[globalPop[i].posInPatch].f/2;
+                relationship[(genCount+1)%2][i][j] = 0.5 + 0.5*patches[globalPop[i].patch].population[globalPop[i].posInPatch].f;
             }
 
             else
@@ -408,7 +414,7 @@ void World::calcNewRelationships(void)
                 (relationship[genCount%2][std::max(mothers[i], mothers[j])][std::min(mothers[i], mothers[j])] +
                  relationship[genCount%2][std::max(fathers[i], fathers[j])][std::min(fathers[i], fathers[j])] +
                  relationship[genCount%2][std::max(fathers[i], mothers[j])][std::min(fathers[i], mothers[j])] +
-                 relationship[genCount%2][std::max(mothers[i], fathers[j])][std::min(mothers[i], fathers[j])])/4;
+                 relationship[genCount%2][std::max(mothers[i], fathers[j])][std::min(mothers[i], fathers[j])])*0.25;
             }
         }
     }

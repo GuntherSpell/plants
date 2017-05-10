@@ -116,7 +116,7 @@ private:
      * tous les apparentements entre tous les individus.
      *
      * Pour les générations paires, les parents sont dans la case 0.
-     * Pour les générations impaires, c'est l'inverse.
+     * Pour les générations impaires, les parents sont dans la case 1.
      */
     std::array<std::vector<std::vector<double>>, 2> relationship;
 
