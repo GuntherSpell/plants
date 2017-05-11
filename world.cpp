@@ -167,7 +167,10 @@ void World::run(int idWorld)
         }
     }
 
-    writeRelationships();
+    if(relationshipIsManaged)
+    {
+        writeRelationships();
+    }
 }
 
 void World::createNextGen (int idPatch)
