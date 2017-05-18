@@ -102,7 +102,6 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     generator.seed (seed);
 
     writeHeaders(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
-    writeReport();
 }
 
 double World::distr(double minVal, double maxVal, double sigma, int posPatch)
