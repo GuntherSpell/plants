@@ -13,8 +13,8 @@
 #include "individual.h"
 
 World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
-             int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
-             double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
+             int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
+             int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
              bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
              int checkConvergenceFrequency, int NGen, int genReport)
 {
@@ -58,11 +58,88 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     juveniles[0].reserve(Kmax);
     juveniles[1].reserve(Kmax);
 
+    /* Deux vecteurs qui permettent de stocker les valeurs de K et P
+    pour chaque patch avant de construire les patchs. */
+    std::vector<int> list_of_K;
+    std::vector<double> list_of_P;
+    list_of_K.reserve(NPatch);
+    list_of_P.reserve(NPatch);
+
+    if(Kdistr == 0)
+    {
+        for(i=0; i<NPatch; i++)
+        {
+            list_of_K.push_back(GaussDistr(Kmin, Kmax, sigmaK, i));
+        }
+    }
+    else
+    {
+        int K_to_reach = 0; // La somme des K si on avait une distribution gaussienne.
+
+        for(i=0; i<NPatch; i++)
+        {
+            K_to_reach += GaussDistr(Kmin, Kmax, sigmaK, i);
+        }
+
+        int Kstep = (K_to_reach - Kmin*NPatch)/(NPatch*(0.5 + NPatch/2));
+
+        if(Kdistr == 1)
+        {
+            for(i=0; i<NPatch; i++)
+            {
+                list_of_K.push_back(Kmin + i*Kstep);
+            }
+        }
+
+        else
+        {
+            for(i=0; i<NPatch; i++)
+            {
+                list_of_K.push_back(Kmin + (30-i)*Kstep);
+            }
+        }
+    }
+
+    if(Pdistr == 0)
+    {
+        for(i=0; i<NPatch; i++)
+        {
+            list_of_P.push_back(GaussDistr(Pmin, Pmax, sigmaP, i));
+        }
+    }
+    else
+    {
+        double P_to_reach = 0; // La somme des P si on avait une distribution gaussienne.
+
+        for(i=0; i<NPatch; i++)
+        {
+            P_to_reach += GaussDistr(Pmin, Pmax, sigmaP, i);
+        }
+
+        double Pstep = (P_to_reach - Pmin*NPatch)/(NPatch*(0.5 + NPatch/2));
+
+        if(Pdistr == 1)
+        {
+            for(i=0; i<NPatch; i++)
+            {
+                list_of_P.push_back(Pmin + i*Pstep);
+            }
+        }
+
+        else
+        {
+            for(i=0; i<NPatch; i++)
+            {
+                list_of_P.push_back(Pmin + (30-i)*Pstep);
+            }
+        }
+    }
+
     int Ktot = 0;
 
     for(i=0; i<NPatch; i++)
     {
-        patches.emplace_back(distr(Pmin, Pmax, sigmaP, i), distr(Kmin, Kmax, sigmaK, i), sInit, dInit, Ktot);
+        patches.emplace_back(list_of_P[i], list_of_K[i], sInit, dInit, Ktot);
         Ktot += patches[i].K;
     }
 
@@ -104,7 +181,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     writeHeaders(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
 }
 
-double World::distr(double minVal, double maxVal, double sigma, int posPatch)
+double World::GaussDistr(double minVal, double maxVal, double sigma, int posPatch)
 {
     return (minVal + ((maxVal - minVal) * exp( - ((posPatch-(NPatch/2))*(posPatch-(NPatch/2))) / (2*sigma*sigma))));
 }

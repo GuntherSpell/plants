@@ -43,16 +43,20 @@ public:
      * Constructeur d'un monde
      *
      * @param idWorld   Permet de générer des rapports différents pour chaque monde.
+     * @param Kdistr    Le type de distribution de K (0=normale; 1 et 2=linéaires gauche>droite ou droite>gauche).
      * @param Kmin      La capacité d'accueil minimale.
      * @param Kmax      La capacité d'accueil maximale.
      * @param sigmaK    Le degré de varition de K dans l'espace.
+     * @param Pdistr    Le type de distribution de P (0=normale; 1 et 2=linéaires gauche>droite ou droite>gauche).
      * @param Pmin      La probabilité maximale qu'un patch soit pollinisé.
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
+     * @param sInit     Le taux d'autofécondation initial.
+     * @param dInit     Le taux de dispersion initial.
      */
     World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
-          int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kmin, int Kmax, int sigmaK,
-          double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
+          int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
+          int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
           bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
           int checkConvergenceFrequency, int NGen, int genReport);
 
@@ -140,7 +144,7 @@ private:
 
     /**
      * @brief
-     * Méthode qui permet de retourner une valeur pour un patch selon sa position.
+     * Méthode qui permet de retourner une valeur pour un patch selon sa position (distribution normale).
      *
      * @param minVal    Valeur maximale
      * @param maxVal    Valeur minimale
@@ -149,7 +153,7 @@ private:
      *
      * @return          La valeur pour le patch donné
      */
-     double distr(double minVal, double maxVal, double sigma, int posPatch);
+     double GaussDistr(double minVal, double maxVal, double sigma, int posPatch);
 
     /**
      * @brief
