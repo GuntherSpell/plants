@@ -260,7 +260,7 @@ private:
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
      */
-    void writeHeaders(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP);
+    void writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr, double Pmin, double Pmax, double sigmaP);
 
     /** @brief Méthode qui écrit un rapport pour un génération donnée */
     void writeReport(void);

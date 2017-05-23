@@ -178,7 +178,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     generator.seed (seed);
 
-    writeHeaders(Kmin, Kmax, sigmaK, Pmin, Pmax, sigmaP);
+    writeHeaders(Kdistr, Kmin, Kmax, sigmaK, Kdistr, Pmin, Pmax, sigmaP);
 }
 
 double World::GaussDistr(double minVal, double maxVal, double sigma, int posPatch)
@@ -521,15 +521,15 @@ void World::printProgress(int progress)
     std::cout << "]" << std::endl;
 }
 
-void World::writeHeaders(int Kmin, int Kmax, int sigmaK, double Pmin, double Pmax, double sigmaP)
+void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
     report << "Gestion de l'apparentement:" << relationshipIsManaged << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
     report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ;
     report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
-    report << "Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
-    report << "Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
+    report << "KDistr:" << Kdistr << " Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
+    report << "PDistr:" << Pdistr << " Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
     report << "Vérifier convergence:" << convergenceToBeChecked << " N de patchs à converger=" << NPatchToConverge;
     report << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
     report << " Fréquence=" << checkConvergenceFrequency << std::endl;
@@ -597,7 +597,6 @@ void World::writeRelationships(void)
 
             for(k=0; k<=ind_abs_id; k++)
             {
-                //std::round(relationship[0][ind_abs_id][k] * 1000) / 1000
                 relation_report << relationship[0][ind_abs_id][k] << '\t';
             }
 
