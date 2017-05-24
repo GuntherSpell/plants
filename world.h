@@ -58,7 +58,7 @@ public:
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
           int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
           bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
-          int checkConvergenceFrequency, int NGen, int genReport);
+          int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written);
 
     /**
      * @brief
@@ -103,6 +103,8 @@ private:
     int NGen; /**< @brief Le nombre de générations à créer */
     int genReport; /**< @brief Le nombre de générations entre chaque rapport .txt */
     int genCount; /**< @brief Compteur de générations */
+
+    bool logPoll_is_to_be_written; /**< @brief Si le log des états de pollinisation doit être écrit. */
 
     std::mt19937_64 generator; /**< @brief Générateur de nombre aléatoire */
 

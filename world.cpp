@@ -16,7 +16,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
              int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
              bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
-             int checkConvergenceFrequency, int NGen, int genReport)
+             int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written)
 {
     int i = 0, j = 0;
 
@@ -44,7 +44,12 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     report.open ("report_" + std::to_string(idWorld) + ".txt");
     this->genReport = genReport;
 
-    logPoll.open("logPoll_" + std::to_string(idWorld) + ".txt");
+    this->logPoll_is_to_be_written = logPoll_is_to_be_written;
+
+    if(logPoll_is_to_be_written)
+    {
+        logPoll.open("logPoll_" + std::to_string(idWorld) + ".txt");
+    }
 
     if(relationshipIsManaged)
     {
@@ -205,7 +210,10 @@ void World::run(int idWorld)
             patches[i].pollenized = redefinePollination(patches[i].p);
         }
 
-        writeLogPoll();
+        if(logPoll_is_to_be_written)
+        {
+            writeLogPoll();
+        }
 
         for(i=0; i<NPatch; i++)
         {
@@ -535,7 +543,10 @@ void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr,
     report << " Fréquence=" << checkConvergenceFrequency << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 
-    logPoll << "Gen" << '\t' << "Patch" << '\t' << "Etat" << std::endl;
+    if(logPoll_is_to_be_written)
+    {
+        logPoll << "Gen" << '\t' << "Patch" << '\t' << "Etat" << std::endl;
+    }
 }
 
 void World::writeReport(void)
