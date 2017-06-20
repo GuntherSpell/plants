@@ -12,7 +12,7 @@
 #include "patch.h"
 #include "individual.h"
 
-World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
+World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, double mitigateRelationship,
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
              int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
              bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
@@ -26,6 +26,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->c = c;
 
     this->relationshipIsManaged = relationshipIsManaged;
+    this->mitigateRelationship = mitigateRelationship;
 
     this->typeMut = distrMut(typeMut);
     this->mu = mu;
@@ -484,6 +485,8 @@ void World::calcNewRelationships(void)
 {
     int i = 0, j = 0;
 
+    /* Les apparentements sont multipliés par 1 - mu pour introduire le fait
+       qu'une partie du génome change à cause des mutations. */
     for(i=0; i<int(globalPop.size()); i++)
     {
         for(j=0; j<=i; j++)
@@ -492,12 +495,13 @@ void World::calcNewRelationships(void)
             if(i == j)
             {
                 /* On a besoin du taux de consanguinité de l'individu. */
-                relationship[(genCount+1)%2][i][j] = 0.5 + 0.5*patches[globalPop[i].patch].population[globalPop[i].posInPatch].f;
+                relationship[(genCount+1)%2][i][j] = (1 - mitigateRelationship) *
+                (0.5 + 0.5*patches[globalPop[i].patch].population[globalPop[i].posInPatch].f);
             }
 
             else
             {
-                relationship[(genCount+1)%2][i][j] =
+                relationship[(genCount+1)%2][i][j] = (1 - mitigateRelationship) *
                 (relationship[genCount%2][std::max(mothers[i], mothers[j])][std::min(mothers[i], mothers[j])] +
                  relationship[genCount%2][std::max(fathers[i], fathers[j])][std::min(fathers[i], fathers[j])] +
                  relationship[genCount%2][std::max(fathers[i], mothers[j])][std::min(fathers[i], mothers[j])] +

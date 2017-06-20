@@ -54,7 +54,7 @@ public:
      * @param sInit     Le taux d'autofécondation initial.
      * @param dInit     Le taux de dispersion initial.
      */
-    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged,
+    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, double mitigateRelationship,
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
           int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
           bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
@@ -88,6 +88,7 @@ private:
     double c; /**< @brief Le coût de dispersion */
 
     bool relationshipIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
+    double mitigateRelationship; /**< @brief 1 - la valeur par laquelle on multiplie l'apparentement à chaque génération. */
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur de mutation */
     double mu; /**< @brief La probabilité de mutation */
