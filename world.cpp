@@ -536,7 +536,8 @@ void World::printProgress(int progress)
 void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
-    report << "Gestion de l'apparentement:" << relationshipIsManaged << std::endl;
+    report << "Gestion de l'apparentement:" << relationshipIsManaged;
+    report << " Correction apparentement=" << mitigateRelationship << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
     report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ;
     report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
