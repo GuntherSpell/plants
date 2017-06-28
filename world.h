@@ -54,7 +54,7 @@ public:
      * @param sInit     Le taux d'autofécondation initial.
      * @param dInit     Le taux de dispersion initial.
      */
-    World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, double mitigateRelationship,
+    World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
           int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
           bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
@@ -87,8 +87,8 @@ private:
     double delta; /**< @brief La dépression de consanguinité */
     double c; /**< @brief Le coût de dispersion */
 
-    bool relationshipIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
-    double mitigateRelationship; /**< @brief 1 - la valeur par laquelle on multiplie l'apparentement à chaque génération. */
+    bool relatednessIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
+    double mitigateRelatedness; /**< @brief 1 - la valeur par laquelle on multiplie l'apparentement à chaque génération. */
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur de mutation */
     double mu; /**< @brief La probabilité de mutation */
@@ -125,7 +125,7 @@ private:
      * Pour les générations paires, les parents sont dans la case 0.
      * Pour les générations impaires, les parents sont dans la case 1.
      */
-    std::array<std::vector<std::vector<double>>, 2> relationship;
+    std::array<std::vector<std::vector<double>>, 2> relatedness;
 
     /**
      * @brief
@@ -242,7 +242,7 @@ private:
     bool redefinePollination(double p);
 
     /** @brief Méthode qui va recalculer les apparentements entre tous les individus. */
-    void calcNewRelationships(void);
+    void calcNewRelatednesses(void);
 
     /**
      * @brief
@@ -271,7 +271,7 @@ private:
     /** @brief Méthode qui écrit le journal de la pollinisation pour un génération donnée */
     void writeLogPoll(void);
 
-    void writeRelationships(void);
+    void writeRelatednesses(void);
 
     /**
      * @brief

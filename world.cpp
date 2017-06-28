@@ -12,7 +12,7 @@
 #include "patch.h"
 #include "individual.h"
 
-World::World(int idWorld, int NPatch, double delta, double c, bool relationshipIsManaged, double mitigateRelationship,
+World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
              int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
              bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
@@ -25,8 +25,8 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
     this->delta = delta;
     this->c = c;
 
-    this->relationshipIsManaged = relationshipIsManaged;
-    this->mitigateRelationship = mitigateRelationship;
+    this->relatednessIsManaged = relatednessIsManaged;
+    this->mitigateRelatedness = mitigateRelatedness;
 
     this->typeMut = distrMut(typeMut);
     this->mu = mu;
@@ -52,7 +52,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
         logPoll.open("logPoll_" + std::to_string(idWorld) + ".txt");
     }
 
-    if(relationshipIsManaged)
+    if(relatednessIsManaged)
     {
         relation_report.open("relation_" + std::to_string(idWorld) + ".txt");
     }
@@ -162,10 +162,10 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
         }
     }
 
-    if(relationshipIsManaged)
+    if(relatednessIsManaged)
     {
-        relationship[0].reserve(Ktot);
-        relationship[1].reserve(Ktot);
+        relatedness[0].reserve(Ktot);
+        relatedness[1].reserve(Ktot);
         fathers.reserve(Ktot);
         mothers.reserve(Ktot);
 
@@ -173,11 +173,11 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relationshipI
         for(i=0; i<Ktot; i++)
         {
             /* Pour chacune des deux matrices, on construit Ktot lignes remplies de i+1 zéros. */
-            relationship[0].emplace_back(i + 1);
-            relationship[1].emplace_back(i + 1);
+            relatedness[0].emplace_back(i + 1);
+            relatedness[1].emplace_back(i + 1);
 
             /* Pour la première matrice, il faut remplir la diagonale de 0.5. */
-            relationship[0][i][i] = 0.5;
+            relatedness[0][i][i] = 0.5;
         }
     }
 
@@ -232,16 +232,16 @@ void World::run(int idWorld)
 
             if(sumOfConvergedPatches >= NPatchToConverge)
             {
-                if(relationshipIsManaged) {writeRelationships();}
+                if(relatednessIsManaged) {writeRelatednesses();}
                 return; // Si on a rempli le critère de convergence, on arrête la simu
             }
 
             checkCount ++;
         }
 
-        if(relationshipIsManaged)
+        if(relatednessIsManaged)
         {
-            calcNewRelationships();
+            calcNewRelatednesses();
         }
 
         /* Indique la progression à l'écran */
@@ -252,9 +252,9 @@ void World::run(int idWorld)
         }
     }
 
-    if(relationshipIsManaged)
+    if(relatednessIsManaged)
     {
-        writeRelationships();
+        writeRelatednesses();
     }
 }
 
@@ -367,7 +367,7 @@ void World::newInd(int whr, int mother, bool autof)
     {
         double f = 0.5;
 
-        if(relationshipIsManaged)
+        if(relatednessIsManaged)
         {
             f = 0.5 + patches[patchMother].population[mother_PosInPatch].f*0.5;
             mothers.push_back(mother);
@@ -386,11 +386,11 @@ void World::newInd(int whr, int mother, bool autof)
 
         int father = getFather(patchMother, mother_PosInPatch);
 
-        if(relationshipIsManaged)
+        if(relatednessIsManaged)
         {
             mothers.push_back(mother);
             fathers.push_back(patches[patchMother].pos_of_first_ind + father);
-            f = relationship[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
+            f = relatedness[genCount%2][std::max(fathers.back(), mothers.back())][std::min(fathers.back(), mothers.back())];
 
         }
 
@@ -481,7 +481,7 @@ bool World::redefinePollination(double p)
     return false;
 }
 
-void World::calcNewRelationships(void)
+void World::calcNewRelatednesses(void)
 {
     int i = 0, j = 0;
 
@@ -495,17 +495,17 @@ void World::calcNewRelationships(void)
             if(i == j)
             {
                 /* On a besoin du taux de consanguinité de l'individu. */
-                relationship[(genCount+1)%2][i][j] = (1 - mitigateRelationship) *
+                relatedness[(genCount+1)%2][i][j] = (1 - mitigateRelatedness) *
                 (0.5 + 0.5*patches[globalPop[i].patch].population[globalPop[i].posInPatch].f);
             }
 
             else
             {
-                relationship[(genCount+1)%2][i][j] = (1 - mitigateRelationship) *
-                (relationship[genCount%2][std::max(mothers[i], mothers[j])][std::min(mothers[i], mothers[j])] +
-                 relationship[genCount%2][std::max(fathers[i], fathers[j])][std::min(fathers[i], fathers[j])] +
-                 relationship[genCount%2][std::max(fathers[i], mothers[j])][std::min(fathers[i], mothers[j])] +
-                 relationship[genCount%2][std::max(mothers[i], fathers[j])][std::min(mothers[i], fathers[j])])*0.25;
+                relatedness[(genCount+1)%2][i][j] = (1 - mitigateRelatedness) *
+                (relatedness[genCount%2][std::max(mothers[i], mothers[j])][std::min(mothers[i], mothers[j])] +
+                 relatedness[genCount%2][std::max(fathers[i], fathers[j])][std::min(fathers[i], fathers[j])] +
+                 relatedness[genCount%2][std::max(fathers[i], mothers[j])][std::min(fathers[i], mothers[j])] +
+                 relatedness[genCount%2][std::max(mothers[i], fathers[j])][std::min(mothers[i], fathers[j])])*0.25;
             }
         }
     }
@@ -536,8 +536,8 @@ void World::printProgress(int progress)
 void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr, double Pmin, double Pmax, double sigmaP)
 {
     report << "Nombre de patchs=" << NPatch << std::endl;
-    report << "Gestion de l'apparentement:" << relationshipIsManaged;
-    report << " Correction apparentement=" << mitigateRelationship << std::endl;
+    report << "Gestion de l'apparentement:" << relatednessIsManaged;
+    report << " Correction apparentement=" << mitigateRelatedness << std::endl;
     report << "Delta=" << delta << " c=" << c << std::endl;
     report << "Loi pour la mutation:" << typeMut << " mu=" << mu << " sigmaZ=" << sigmaZ;
     report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
@@ -588,7 +588,7 @@ void World::writeLogPoll(void)
     }
 }
 
-void World::writeRelationships(void)
+void World::writeRelatednesses(void)
 {
     int i = 0, j = 0, k = 0;
     int ind_abs_id = 0; // La position absolue de l'individu (la ligne) concerné.
@@ -613,7 +613,7 @@ void World::writeRelationships(void)
 
             for(k=0; k<=ind_abs_id; k++)
             {
-                relation_report << relationship[0][ind_abs_id][k] << '\t';
+                relation_report << relatedness[0][ind_abs_id][k] << '\t';
             }
 
             ind_abs_id ++;
