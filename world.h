@@ -57,8 +57,8 @@ public:
     World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
           int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
-          bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
-          int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written);
+          bool convergenceToBeChecked, int NPatchToConverge, int NGenToConverge, double relativeConvergence,
+          double absoluteConvergence, int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written);
 
     /**
      * @brief
@@ -97,6 +97,8 @@ private:
 
     bool convergenceToBeChecked; /**< @brief Indique si on doit vérifier l'état de convergence */
     int NPatchToConverge; /**< @brief Le nombre de patchs qui doivent converger pour que le monde ait convergé */
+    int NGenToConverge; /**< @brief Le nbr de vérifications de convergence consécutives identiques pour que le patch ait convergé */
+    int n_choose_2; /**< @brief Le nombre de combinaisons de 2 parmi les générations à vérifier pour la convergence */
     double relativeConvergence; /**< @brief Le critère de variation relative pour juger de l'état de convergence */
     double absoluteConvergence; /**< @brief Le critère de variation absoule pour juger de l'état de convergence */
     int checkConvergenceFrequency; /**< @brief La fréquence à laquelle l'état de convergence doit être vérifié */
@@ -280,6 +282,16 @@ private:
      * @param toClear   le vecteur à vider, qui doit contenir des doubles
      */
     void clear_and_freeVector(std::vector<double>& toClear);
+
+    /**
+     * @brief
+     * Méthode qui calcule la factorielle de n. Utile pour vérifier la convergence.
+     *
+     * @param n     L'entier dont il faut calculer la factorielle.
+     *
+     * @return      Le résultat (n!).
+     */
+    int factorial(int n);
 };
 
 #endif // WORLD_H_INCLUDED

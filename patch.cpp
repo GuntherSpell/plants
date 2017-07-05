@@ -58,7 +58,7 @@ void Patch::getResidPress(double delta, std::vector<double>& press)
     }
 }
 
-int Patch::check_convergence(int reportCount, double relativeConvergence, double absoluteConvergence)
+int Patch::check_convergence(int checkCount, int NGenToConverge, int n_choose_2, double relativeConvergence, double absoluteConvergence)
 {
     int i = 0;
 
@@ -66,7 +66,8 @@ int Patch::check_convergence(int reportCount, double relativeConvergence, double
 
     trait_values.reserve(K);
 
-    if(reportCount<2)
+    /* Avant d'avoir suffisamment de générations de référence, on remplit la matrice. */
+    if(checkCount < NGenToConverge)
     {
         /* Pour d */
         for(i=0; i<K; i++)
@@ -74,7 +75,15 @@ int Patch::check_convergence(int reportCount, double relativeConvergence, double
             trait_values.push_back(population[i].d);
         }
 
-        previous_d_means[reportCount] = calc_mean(trait_values);
+        double new_d_mean = calc_mean(trait_values);
+
+        for(i=0; i<checkCount; i++)
+        {
+            prev_gens_d_similarity_matrix[i][NGenToConverge - checkCount - 1] =
+            check_stats(previous_d_means[i], new_d_mean, relativeConvergence, absoluteConvergence);
+        }
+
+        previous_d_means[checkCount] = new_d_mean;
 
         trait_values.clear();
 
@@ -84,61 +93,130 @@ int Patch::check_convergence(int reportCount, double relativeConvergence, double
             trait_values.push_back(population[i].s);
         }
 
-        previous_s_means[reportCount] = calc_mean(trait_values);
+        double new_s_mean = calc_mean(trait_values);
+
+        for(i=0; i<checkCount; i++)
+        {
+            prev_gens_s_similarity_matrix[i][NGenToConverge - checkCount - 1] =
+            check_stats(previous_s_means[i], new_s_mean, relativeConvergence, absoluteConvergence);
+        }
+
+        previous_s_means[checkCount] = new_s_mean;
     }
 
+    /* D'une fois que la matrice est remplie, on peut vérifier la convergence. */
     else
     {
+        int j = 0;
+        int convergeSum = 0;
+
         /* Pour d */
         if(!d_hasConverged)
         {
-            for(i=0; i<K; i++)
+            /* On vérifie que ce trait a convergé. */
+            for(i=0; i<(NGenToConverge - 1); i++)
             {
-                trait_values.push_back(population[i].d);
+                for(j=0; j<(NGenToConverge - 1 - i); j++)
+                {
+                    convergeSum += prev_gens_d_similarity_matrix[i][j];
+                }
             }
 
-            double new_d_mean = calc_mean(trait_values);
+            if(convergeSum == n_choose_2)
+            {
+                d_hasConverged = 1;
+            }
 
-            d_hasConverged = check_stats(previous_d_means, new_d_mean, relativeConvergence, absoluteConvergence);
+            else
+            {
+                for(i=0; i<K; i++)
+                {
+                    trait_values.push_back(population[i].d);
+                }
 
-            previous_d_means[reportCount%2] = new_d_mean;
+                double new_d_mean = calc_mean(trait_values);
 
-            trait_values.clear();
+                while(i < checkCount%NGenToConverge)
+                {
+                    prev_gens_d_similarity_matrix[i][NGenToConverge - 1 - checkCount%NGenToConverge] =
+                    check_stats(previous_d_means[i], new_d_mean, relativeConvergence, absoluteConvergence);
+                    i++;
+                }
+
+                for(i=0; i < NGenToConverge - 1 - checkCount%NGenToConverge; i++)
+                {
+                    prev_gens_d_similarity_matrix[checkCount%NGenToConverge][i] =
+                    check_stats(previous_d_means[NGenToConverge - 1 - i], new_d_mean, relativeConvergence, absoluteConvergence);
+                }
+
+                previous_d_means[checkCount%NGenToConverge] = new_d_mean;
+
+                trait_values.clear();
+
+            }
         }
 
         /* Pour s */
         if(!s_hasConverged)
         {
-            for(i=0; i<K; i++)
+            /* On vérifie que ce trait a convergé. */
+            convergeSum = 0;
+
+            for(i=0; i<(NGenToConverge - 1); i++)
             {
-                trait_values.push_back(population[i].s);
+                for(j=0; j<(NGenToConverge - 1 - i); j++)
+                {
+                    convergeSum += prev_gens_s_similarity_matrix[i][j];
+                }
             }
 
-            double new_s_mean = calc_mean(trait_values);
+            if(convergeSum == n_choose_2)
+            {
+                s_hasConverged = 1;
+            }
 
-            s_hasConverged = check_stats(previous_s_means, new_s_mean, relativeConvergence, absoluteConvergence);
+            else
+            {
+                for(i=0; i<K; i++)
+                {
+                    trait_values.push_back(population[i].s);
+                }
 
-            previous_s_means[reportCount%2] = new_s_mean;
+                double new_s_mean = calc_mean(trait_values);
+
+                while(i < checkCount%NGenToConverge)
+                {
+                    prev_gens_s_similarity_matrix[i][NGenToConverge - 1 - checkCount%NGenToConverge] =
+                    check_stats(previous_s_means[i], new_s_mean, relativeConvergence, absoluteConvergence);
+                    i++;
+                }
+
+                for(i=0; i < NGenToConverge - 1 - checkCount%NGenToConverge; i++)
+                {
+                    prev_gens_s_similarity_matrix[checkCount%NGenToConverge][i] =
+                    check_stats(previous_s_means[NGenToConverge - 1 - i], new_s_mean, relativeConvergence, absoluteConvergence);
+                }
+
+                previous_s_means[checkCount%NGenToConverge] = new_s_mean;
+            }
         }
 
         if(d_hasConverged && s_hasConverged)
         {
-            return 1; //Le patch a convergé, on renvoie 1 pour sommer tous le patchs convergés.
+            return 1; //Le patch a convergé, on renvoie 1 pour sommer tous les patchs convergés.
         }
     }
 
     return 0;
 }
 
-bool Patch::check_stats(std::array<double, 2> previous_means, double new_mean, double relativeConvergence, double absoluteConvergence)
+bool Patch::check_stats(double first_mean, double second_mean, double relativeConvergence, double absoluteConvergence)
 {
     /* On a deux critères avec un OU logique
     En variation relative: efficace quand la valeur est haute
     En variation absolue: efficace quand la valeur est basse */
-    if((std::abs(new_mean - previous_means[0])/previous_means[0] < relativeConvergence &&
-       std::abs(new_mean - previous_means[1])/previous_means[1] < relativeConvergence) ||
-       (std::abs(new_mean - previous_means[0]) < absoluteConvergence &&
-       std::abs(new_mean - previous_means[1]) < absoluteConvergence))
+    if(std::abs(first_mean - second_mean)/second_mean < relativeConvergence ||
+       (std::abs(first_mean - second_mean) < absoluteConvergence))
     {
         return true;
     }

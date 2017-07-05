@@ -37,8 +37,20 @@ public:
     /** @brief Si le taux d'autofécondation des individus du patch est stable dans le temps. */
     bool s_hasConverged;
 
-    std::array<double, 2> previous_d_means; /**< @brief 2 dernières valeurs de la moyenne de d. */
-    std::array<double, 2> previous_s_means; /**< @brief 2 dernières valeurs de la moyenne de s. */
+    std::vector<double> previous_d_means; /**< @brief n dernières valeurs de la moyenne de d */
+    std::vector<double> previous_s_means; /**< @brief n dernières valeurs de la moyenne de s */
+
+    /**
+     * @brief
+     * Matrice qui indique si les états précédents de la moyenne de s du patch sont similaires ou non.
+     */
+    std::vector<std::vector<bool>> prev_gens_s_similarity_matrix;
+
+    /**
+     * @brief
+     * Matrice qui indique si les états précédents de la moyenne de d du patch sont similaires ou non.
+     */
+    std::vector<std::vector<bool>> prev_gens_d_similarity_matrix;
 
     /**
     * @brief La position absolue (dans le monde entier) du premier individu du patch.
@@ -87,26 +99,28 @@ public:
      * @brief
      * Méthode qui vérifie l'état de convergence du patch par rapport aux deux états précédents
      *
-     * @param reportCount           Le numéro de la vérification pour savoir où ajouter le nouvel état
+     * @param checkCount            Le nombre de fois que la convergence a été vérifiée
+     * @param NGenToConverge        Le nombre de vérifications consécutives identiques pour considérer que le patch a convergé
+     * @param n_choose_2            Le nombre de combinaisons de 2 parmi les générations à vérifier pour la convergence
      * @param relativeConvergence   Le critère de variation relative pour juger de l'état de convergence
      * @param absoluteConvergence   Le critère de variation absoule pour juger de l'état de convergence
      *
      * @return                      1 si le patch a convergé, 0 sinon. Utile pour facilement connaitre le nbr de patchs convergés.
      */
-    int check_convergence(int reportCount, double relativeConvergence, double absoluteConvergence);
+    int check_convergence(int checkCount, int NGenToConverge, int n_choose_2, double relativeConvergence, double absoluteConvergence);
 
     /**
      * @brief
-     * Méthode qui vérifie si un trait a convergé par rapport à deux états précédents.
+     * Méthode qui compare deux moyennes et juge si elles sont suffisamment similaires selon deux critères.
      *
-     * @param previous_means    Les valeurs de moyennes précédentes.
-     * @param new_mean          La nouvelle valeur de la moyenne, à comparer avec les précédentes
-     * @param relativeConvergence   Le critère de variation relative pour juger de l'état de convergence
-     * @param absoluteConvergence   Le critère de variation absoule pour juger de l'état de convergence
+     * @param first_mean            La première valeur à comparer
+     * @param second_mean           La seconde valeur à comparer
+     * @param relativeConvergence   Le critère de variation relative pour juger si les moyennes sont similaires
+     * @param absoluteConvergence   Le critère de variation absoule pour juger si les moyennes sont similaires
      *
-     * @return                      Vrai si le trait a convergé, faux sinon
+     * @return                      Vrai si les moyennes sont suffisamment similaires, faux sinon
      */
-    bool check_stats(std::array<double, 2> previous_means, double new_mean, double relativeConvergence, double absoluteConvergence);
+    bool check_stats(double first_mean, double second_mean, double relativeConvergence, double absoluteConvergence);
 
     /**
      * @brief

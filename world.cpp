@@ -15,8 +15,8 @@
 World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
              int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
-             bool convergenceToBeChecked, int NPatchToConverge, double relativeConvergence, double absoluteConvergence,
-             int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written)
+             bool convergenceToBeChecked, int NPatchToConverge, int NGenToConverge, double relativeConvergence,
+             double absoluteConvergence, int checkConvergenceFrequency, int NGen, int genReport, bool logPoll_is_to_be_written)
 {
     int i = 0, j = 0;
 
@@ -35,12 +35,15 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
 
     this->convergenceToBeChecked = convergenceToBeChecked;
     this->NPatchToConverge = NPatchToConverge;
+    this->NGenToConverge = NGenToConverge;
     this->relativeConvergence = relativeConvergence;
     this->absoluteConvergence = absoluteConvergence;
     this->checkConvergenceFrequency = checkConvergenceFrequency;
 
     this->NGen = NGen;
     genCount = 0;
+
+    n_choose_2 = 0;
 
     report.open ("report_" + std::to_string(idWorld) + ".txt");
     this->genReport = genReport;
@@ -141,6 +144,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
         }
     }
 
+    /* Construction des patchs */
     int Ktot = 0;
 
     for(i=0; i<NPatch; i++)
@@ -162,6 +166,24 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
         }
     }
 
+    /* Préparation des vecteurs des moyennes des traits pour vérifier la convergence */
+    if(convergenceToBeChecked)
+    {
+        n_choose_2 = factorial(NGenToConverge)/(2*factorial(NGenToConverge - 2));
+        for(i=0; i<NPatch; i++)
+        {
+            patches[i].previous_d_means.assign(NGenToConverge - 1, 0);
+            patches[i].previous_s_means.assign(NGenToConverge - 1, 0);
+
+            for(j=(NGenToConverge - 1); j>0; j--)
+            {
+                patches[i].prev_gens_s_similarity_matrix.emplace_back(j);
+                patches[i].prev_gens_d_similarity_matrix.emplace_back(j);
+            }
+        }
+    }
+
+    /* Préparation des matrices d'apparentement si nécessaire */
     if(relatednessIsManaged)
     {
         relatedness[0].reserve(Ktot);
@@ -227,12 +249,17 @@ void World::run(int idWorld)
 
             for(i=0; i<NPatch; i++)
             {
-                sumOfConvergedPatches += patches[i].check_convergence(checkCount, relativeConvergence, absoluteConvergence);
+                sumOfConvergedPatches +=
+                patches[i].check_convergence(checkCount, NGenToConverge, n_choose_2, relativeConvergence, absoluteConvergence);
             }
 
             if(sumOfConvergedPatches >= NPatchToConverge)
             {
-                if(relatednessIsManaged) {writeRelatednesses();}
+                if(relatednessIsManaged)
+                {
+                    writeRelatednesses();
+                }
+
                 return; // Si on a rempli le critère de convergence, on arrête la simu
             }
 
@@ -543,8 +570,8 @@ void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr,
     report << " Taux de mutationt relatif d/s=" << d_s_relativeMutation << std::endl;
     report << "KDistr:" << Kdistr << " Kmin=" << Kmin << " Kmax=" << Kmax << " SigmaK=" << sigmaK << std::endl;
     report << "PDistr:" << Pdistr << " Pmin=" << Pmin << " Pmax=" << Pmax << " SigmaP=" << sigmaP << std::endl;
-    report << "Vérifier convergence:" << convergenceToBeChecked << " N de patchs à converger=" << NPatchToConverge;
-    report << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
+    report << "Vérifier convergence:" << convergenceToBeChecked << " N patchs à converger=" << NPatchToConverge;
+    report << " N gen à converger=" << NGenToConverge << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
     report << " Fréquence=" << checkConvergenceFrequency << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 
@@ -621,3 +648,12 @@ void World::writeRelatednesses(void)
     }
 }
 
+int World::factorial(int n)
+{
+    if(n <= 1)
+    {
+        return 1;
+    }
+
+    return n*factorial(n - 1);
+}
