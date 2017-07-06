@@ -261,11 +261,14 @@ private:
      * @param Kmin      La capacité d'accueil minimale.
      * @param Kmax      La capacité d'accueil maximale.
      * @param sigmaK    Le degré de varition de K dans l'espace.
+     * @param Ktot      La somme de tous les K.
      * @param Pmin      La probabilité maximale qu'un patch soit pollinisé.
      * @param Pmin      La probabilité minimale qu'un patch soit pollinisé.
      * @param sigmaP    Le degré de varition de P dans l'espace.
+     * @param Ptot      La somme de tous les P.
      */
-    void writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Pdistr, double Pmin, double Pmax, double sigmaP);
+    void writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Ktot,
+                      int Pdistr, double Pmin, double Pmax, double sigmaP, double Ptot);
 
     /** @brief Méthode qui écrit un rapport pour un génération donnée */
     void writeReport(void);
