@@ -245,7 +245,8 @@ void World::run(int idWorld)
             createNextGen(i);
         }
 
-        if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0)
+        if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0 &&
+           (genCount >= 100000 - (NGenToConverge - 1)*checkConvergenceFrequency))
         {
             int sumOfConvergedPatches = 0;
 
@@ -262,7 +263,7 @@ void World::run(int idWorld)
                     writeRelatednesses();
                 }
 
-                return; // Si on a rempli le critère de convergence, on arrête la simu
+                return; // Si on a rempli le critère de convergence, on arrête la simu.
             }
 
             checkCount ++;
