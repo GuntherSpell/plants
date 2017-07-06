@@ -6,12 +6,12 @@
 int main(int argc, char *argv[])
 {
     int i = 0;
-    std::array<double, 29> params;
+    std::array<double, 31> params;
 
     int checkSum = 0; // égal à la longeur de params si les conversions ont bien eu lieu.
 
     /* Conversion char* -> double */
-    for(i=0; i<29; i++)
+    for(i=0; i<31; i++)
     {
         std::istringstream iss(argv[i+1]);
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         params[10], params[11], params[12], params[13], params[14],
         params[15], params[16], params[17], params[18], params[19],
         params[20], params[21], params[22], params[23], params[24], params[25],
-        params[26], params[27], params[28]);
+        params[26], params[27], params[28], params[29], params[30]);
         world.run(params[0]);
     }
 

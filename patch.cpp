@@ -38,8 +38,8 @@ void Patch::getDispPress(double delta, double c, std::vector<double>& press)
     {
         int i = 0;
 
-        dispSeeds.reserve(2*K);
-        for(i=0; i<K; i++)
+        dispSeeds.reserve(2*population.size());
+        for(i=0; i < population.size(); i++)
         {
             population[i].calcDispPress(delta, c, pollenized, dispSeeds);
         }
@@ -52,7 +52,7 @@ void Patch::getResidPress(double delta, std::vector<double>& press)
 {
     int i = 0;
 
-    for(i=0; i<K; i++)
+    for(i=0; i < population.size(); i++)
     {
         population[i].calcResidPress(delta, pollenized, press);
     }

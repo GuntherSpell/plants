@@ -13,6 +13,7 @@
 #include "individual.h"
 
 World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
+             bool rangeToBeShifted, int shiftFrequency,
              int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
              int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
              bool convergenceToBeChecked, int NPatchToConverge, int NGenToConverge, double relativeConvergence,
@@ -27,6 +28,9 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
 
     this->relatednessIsManaged = relatednessIsManaged;
     this->mitigateRelatedness = mitigateRelatedness;
+
+    this->rangeToBeShifted = rangeToBeShifted;
+    this->shiftFrequency = shiftFrequency;
 
     this->typeMut = distrMut(typeMut);
     this->mu = mu;
@@ -240,10 +244,76 @@ void World::run(int idWorld)
             writeLogPoll();
         }
 
-        for(i=0; i<NPatch; i++)
+        if(rangeToBeShifted && genCount%shiftFrequency == 0)
         {
-            createNextGen(i);
+            /* Déplacement des populations */
+            for(i=0; i < NPatch - 1; i++)
+            {
+                patches[i].population = patches[i+1].population;
+
+                /* On tue les individus en trop. */
+                while(patches[i].K < int(patches[i].population.size()))
+                {
+                    patches[i].population.pop_back();
+                }
+            }
+
+            /* Le patch de droite (le nouveau) est vidé. */
+            patches[NPatch - 1].population.clear();
+
+            /* Réévaluer la position du premier individu dans le patch (par rapport à la pop globale). */
+            unsigned int new_pos_first_ind = patches[0].population.size();
+            for(i=1; i<NPatch; i++)
+            {
+                patches[i].pos_of_first_ind = new_pos_first_ind;
+                new_pos_first_ind += patches[i].population.size();
+            }
+
+            /* Il faut recréer la globalPop avant de pouvoir créer la nouvelle génération. */
+            globalPop.clear();
+
+            for(i=0; i<NPatch; i++)
+            {
+                for(int j = 0; j < int(patches[i].population.size()); j++)
+                {
+                    IndividualPosition InfoToAdd;   //
+                    InfoToAdd.patch = i;            // On ne peut pas ajouter l'info dans le vecteur sans la construire avant.
+                    InfoToAdd.posInPatch = j;       //
+
+                    globalPop.push_back(InfoToAdd);
+                }
+            }
+
+            for(i=0; i<NPatch; i++)
+            {
+                createNextGen(i);
+            }
+
+            /* D'une fois que la nouvelle génération est créée, le monde a retrouvé sa population normale.
+            Il faut donc recréer globalPop une nouvelle fois. */
+            globalPop.clear();
+
+            for(i=0; i<NPatch; i++)
+            {
+                for(int j = 0; j < int(patches[i].population.size()); j++)
+                {
+                    IndividualPosition InfoToAdd;   //
+                    InfoToAdd.patch = i;            // On ne peut pas ajouter l'info dans le vecteur sans la construire avant.
+                    InfoToAdd.posInPatch = j;       //
+
+                    globalPop.push_back(InfoToAdd);
+                }
+            }
         }
+
+        else
+        {
+            for(i=0; i<NPatch; i++)
+            {
+                createNextGen(i);
+            }
+        }
+
 
         if(convergenceToBeChecked && genCount%checkConvergenceFrequency == 0 &&
            (genCount >= 100000 - (NGenToConverge - 1)*checkConvergenceFrequency))
@@ -288,7 +358,7 @@ void World::run(int idWorld)
     }
 }
 
-void World::createNextGen (int idPatch)
+void World::createNextGen(int idPatch)
 {
     int i = 0;
 
@@ -348,8 +418,6 @@ void World::createNextGen (int idPatch)
 
     /* Objet qui permet de générer des nombres aléatoires pondérés. */
     std::piecewise_constant_distribution<double> weighted (mother.begin(), mother.end(), press.begin());
-
-    /* Il faut savoir si les mères paires font de l'autof ou de l'allof. Cela dépend de firstMother. */
 
     for(i=0; i<patches[idPatch].K; i++)
     {
@@ -491,9 +559,12 @@ int World::getFather(int patchMother, int mother)
 {
     int father = 0;
 
-    std::uniform_int_distribution<int> unif(0, patches[patchMother].K-1);
+    std::uniform_int_distribution<int> unif(0, patches[patchMother].population.size() - 1);
 
-    do {father = unif(generator);}
+    do
+    {
+        father = unif(generator);
+    }
     while (father == mother); //Pas de pseudo allofécondation
 
     return father;

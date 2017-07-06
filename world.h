@@ -55,6 +55,7 @@ public:
      * @param dInit     Le taux de dispersion initial.
      */
     World(int idWorld, int NPatch, double delta, double c, bool relatednessIsManaged, double mitigateRelatedness,
+          bool rangeToBeShifted, int shiftFrequency,
           int typeMut, double mu, double sigmaZ, double d_s_relativeMutation, int Kdistr, int Kmin, int Kmax, int sigmaK,
           int Pdistr, double Pmin, double Pmax, double sigmaP, double sInit, double dInit,
           bool convergenceToBeChecked, int NPatchToConverge, int NGenToConverge, double relativeConvergence,
@@ -89,6 +90,9 @@ private:
 
     bool relatednessIsManaged; /**< @brief Indique si on doit gérer l'apparentement */
     double mitigateRelatedness; /**< @brief 1 - la valeur par laquelle on multiplie l'apparentement à chaque génération. */
+
+    bool rangeToBeShifted; /**< @brief Indique si et comment l'aire de répartition se déplace. */
+    int shiftFrequency; /**< @brief Le nombre de générations entre chaque shift. */
 
     distrMut typeMut; /**< @brief La distribution de l'ampleur de mutation */
     double mu; /**< @brief La probabilité de mutation */
