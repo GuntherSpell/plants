@@ -430,6 +430,7 @@ void World::createNextGen(int idPatch)
             autof = true;
         }
 
+        /* Pour reprendre l'id de la mère (on en avait le double car autof et allof). */
         chosenMother = (firstMother + chosenMother)/2;
 
         /* Pour les patchs pairs, on met la nouvelle génération dans le 1er vecteur.
@@ -529,8 +530,14 @@ void World::mutation(Individual& IndToMutate)
                 break;
         }
 
-        if (sWasChosen) {IndToMutate.s = trait;}
-        else {IndToMutate.d = trait;}
+        if (sWasChosen)
+        {
+            IndToMutate.s = trait;
+        }
+        else
+        {
+            IndToMutate.d = trait;
+        }
     }
 }
 
@@ -547,8 +554,15 @@ double World::unifMutation(double t)
     double lowerBound = t - sigmaZ;
     double upperBound = t + sigmaZ;
 
-    if(lowerBound < 0) {lowerBound = 0;}
-    if(upperBound > 1) {upperBound = 1;}
+    if(lowerBound < 0)
+    {
+        lowerBound = 0;
+    }
+
+    if(upperBound > 1)
+    {
+        upperBound = 1;
+    }
 
     std::uniform_real_distribution<double> unif(lowerBound, upperBound);
 
