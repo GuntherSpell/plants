@@ -212,7 +212,7 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     generator.seed (seed);
 
-    writeHeaders(Kdistr, Kmin, Kmax, sigmaK, Kdistr, Ktot, Pmin, Pmax, sigmaP, Ptot);
+    writeHeaders(Kdistr, Kmin, Kmax, sigmaK, Ktot, Pdistr, Pmin, Pmax, sigmaP, Ptot);
 }
 
 double World::GaussDistr(double minVal, double maxVal, double sigma, int posPatch)
