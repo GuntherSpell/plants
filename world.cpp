@@ -94,7 +94,9 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
             K_to_reach += GaussDistr(Kmin, Kmax, sigmaK, i);
         }
 
-        int Kstep = (K_to_reach - Kmin*NPatch)/(NPatch*(0.5 + NPatch/2));
+        double Kstep = (K_to_reach - Kmin*NPatch)/((NPatch - 1)*(0.5 + (NPatch - 1)/2));
+        /* ((NPatch - 1)*(0.5 + (NPatch - 1)/2)) est la somme des entiers de 1 à NPatch - 1
+        Ce nombre correspond aux nombres de fois qu'on doit ajouter Kstep à la population. */
 
         if(Kdistr == 1)
         {
@@ -129,7 +131,9 @@ World::World(int idWorld, int NPatch, double delta, double c, bool relatednessIs
             P_to_reach += GaussDistr(Pmin, Pmax, sigmaP, i);
         }
 
-        double Pstep = (P_to_reach - Pmin*NPatch)/(NPatch*(0.5 + NPatch/2));
+        double Pstep = (P_to_reach - Pmin*NPatch)/((NPatch - 1)*(0.5 + (NPatch - 1)/2));
+        /* ((NPatch - 1)*(0.5 + (NPatch - 1)/2)) est la somme des entiers de 1 à NPatch - 1
+        Ce nombre correspond aux nombres de fois qu'on doit ajouter Pstep à la population. */
 
         if(Pdistr == 1)
         {
