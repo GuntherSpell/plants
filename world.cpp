@@ -666,6 +666,7 @@ void World::writeHeaders(int Kdistr, int Kmin, int Kmax, int sigmaK, int Ktot,
     report << "Vérifier convergence:" << convergenceToBeChecked << " N patchs à converger=" << NPatchToConverge;
     report << " N gen à converger=" << NGenToConverge << " Relatif=" << relativeConvergence << " Absolu=" << absoluteConvergence;
     report << " Fréquence=" << checkConvergenceFrequency << std::endl;
+    report << "Shift=" << rangeToBeShifted << " Fréquence=" << shiftFrequency << std::endl;
     report << "Gen\tPatch\tInd\ts\td" << std::endl;
 
     if(logPoll_is_to_be_written)
