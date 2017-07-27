@@ -1,10 +1,17 @@
-Replicates=2
+#!/bin/bash
+Replicates=10
 WorldId=0
-while read line
+
+for i in {0..32}
 do
-	for ((i=0; i<Replicates; i++))
+	while read line
 	do
-		nohup ./model $WorldId $line &
-		((WorldId++))
-	done
-done < config.txt
+		for ((i=0; i<Replicates; i++))
+		do
+			nohup time ./model $WorldId $line &
+			((WorldId++))
+		done
+	done < config_${i}.txt
+
+	sleep 2.5h
+done
