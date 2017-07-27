@@ -1,4 +1,5 @@
 #!/bin/bash
+wait_x_hours=2.5
 Replicates=10
 WorldId=0
 
@@ -13,5 +14,5 @@ do
 		done
 	done < config_${i}.txt
 
-	sleep 2.5h
+	sleep ${wait_x_hours}h
 done
